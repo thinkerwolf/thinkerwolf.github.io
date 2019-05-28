@@ -7,13 +7,15 @@
 
     
 
-    <title>机器学习 | One code man</title>
+    <title>meachine-learning-advices | One code man</title>
     <meta name="author" content="wukai">
+    
+    <meta name="description" content="MathJax.Hub.Config({    extensions: [“tex2jax.js”],    jax: [“input/TeX”, “output/HTML-CSS”],    tex2jax: {            inlineMath: [ [‘$’,’$’], [“\(“,">
     
     
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-    
+    <meta property="og:title" content="meachine-learning-advices">
     <meta property="og:site_name" content="thinkerwolf">
 
     
@@ -215,72 +217,99 @@
 
     <main>
         <div class="container main-container">
-    
-
-<nav class="page-nav hide-on-small-only">
+    <nav class="page-nav hide-on-small-only">
     <div class="nav-wrapper indigo">
         <span class="breadcrumb">当前位置（分类目录）</span>
         
+            
+    
+    
+    <a class="breadcrumb" href="/categories/机器学习/">机器学习</a>
+
 
         
-            <a class="breadcrumb" href="/categories/机器学习/">机器学习</a>
+
         
     </div>
 </nav>
 
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>meachine-learning-advices</h1>
+    
 
 
-    <div class="collection mt-0">
+            </div>
+            <time class="pink-link-context" datetime="2019-05-28T11:42:03.000Z"><a href="/2019/05/28/meachine-learning-advices/">2019-05-28</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
         
-            <a href="/2019/05/28/meachine-learning-advices/" class="collection-item grey-text text-darken-1">
-                <time datetime="2019-05-28T11:42:03.000Z">2019-05-28</time>
-                <span>&nbsp;&nbsp;&nbsp;</span>
-                meachine-learning-advices
-            </a>
-        
-            <a href="/2019/05/20/neural-networks-back-propagation/" class="collection-item grey-text text-darken-1">
-                <time datetime="2019-05-20T10:37:05.000Z">2019-05-20</time>
-                <span>&nbsp;&nbsp;&nbsp;</span>
-                机器学习-神经网络参数和反向传播算法
-            </a>
-        
-            <a href="/2019/05/19/neural-networks-representation/" class="collection-item grey-text text-darken-1">
-                <time datetime="2019-05-19T10:37:05.000Z">2019-05-19</time>
-                <span>&nbsp;&nbsp;&nbsp;</span>
-                机器学习-神经网络表示
-            </a>
-        
-            <a href="/2019/05/07/regularization/" class="collection-item grey-text text-darken-1">
-                <time datetime="2019-05-07T14:11:16.000Z">2019-05-07</time>
-                <span>&nbsp;&nbsp;&nbsp;</span>
-                机器学习-正则化
-            </a>
-        
-            <a href="/2019/05/07/logistic-regrassion/" class="collection-item grey-text text-darken-1">
-                <time datetime="2019-05-06T17:11:16.000Z">2019-05-07</time>
-                <span>&nbsp;&nbsp;&nbsp;</span>
-                机器学习-Logistic回归
-            </a>
-        
-            <a href="/2019/05/06/linear-regrassion-multi-variables/" class="collection-item grey-text text-darken-1">
-                <time datetime="2019-05-06T10:07:16.000Z">2019-05-06</time>
-                <span>&nbsp;&nbsp;&nbsp;</span>
-                机器学习-多变量线性回归
-            </a>
-        
-            <a href="/2019/05/06/linear-regrassion-single-variable/" class="collection-item grey-text text-darken-1">
-                <time datetime="2019-05-06T10:06:16.000Z">2019-05-06</time>
-                <span>&nbsp;&nbsp;&nbsp;</span>
-                机器学习-单变量线性回归
-            </a>
-        
-            <a href="/2019/05/06/machine-learning/" class="collection-item grey-text text-darken-1">
-                <time datetime="2019-05-06T10:05:16.000Z">2019-05-06</time>
-                <span>&nbsp;&nbsp;&nbsp;</span>
-                机器学习-初识机器学习
-            </a>
+            <a href="/tags/machine-learning/" class="chip pink lighten-1">machine-learning</a>
         
     </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#决定下一步做什么"><span class="section table-of-contents-text">决定下一步做什么</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#调试学习算法"><span class="section table-of-contents-text">调试学习算法</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#机器学习诊断"><span class="section table-of-contents-text">机器学习诊断</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#评估预测"><span class="section table-of-contents-text">评估预测</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#测试集合误差（代价）"><span class="section table-of-contents-text">测试集合误差（代价）</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#线性回归"><span class="section table-of-contents-text">线性回归</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#分类误差"><span class="section table-of-contents-text">分类误差</span></a></li></ol></li></ol></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <p><script type="text/x-mathjax-config"><br>  MathJax.Hub.Config({<br>    extensions: [“tex2jax.js”],<br>    jax: [“input/TeX”, “output/HTML-CSS”],<br>    tex2jax: {<br>      <!--$表示行内元素，$$表示块状元素 --><br>      inlineMath: [ [‘$’,’$’], [“\(“,”\)”] ],<br>      displayMath: [ [‘$$’,’$$’], [“\[“,”\]”] ],<br>      processEscapes: true<br>    },<br>    “HTML-CSS”: { availableFonts: [“TeX”] }<br>  });<br></script></p>
+<h2 id="决定下一步做什么"><a href="#决定下一步做什么" class="headerlink" title="决定下一步做什么"></a>决定下一步做什么</h2><h3 id="调试学习算法"><a href="#调试学习算法" class="headerlink" title="调试学习算法"></a>调试学习算法</h3><p>假设你已经实现了正则化的线性回归算法来预测房价。</p>
+<p>但是，当你用一组新的数据测试预测函数时，你发现其预测会有很大的误差，下一步该怎么做。</p>
+<ul>
+<li>获取更多的训练数据。</li>
+<li>尝试更小的特性集合。</li>
+<li>尝试获取更多特性。</li>
+<li>尝试增加多项式特性。</li>
+<li>尝试减小$\lambda$。</li>
+<li>尝试增加$\lambda$。</li>
+</ul>
+<p>上述方法可能有效，但是不是一个很系统的方法。特别是在实际生活中当使用第1个和第3个解决方法时，可能会相当耗时。所以需要一个系统性的诊断方法来判定。</p>
+<h3 id="机器学习诊断"><a href="#机器学习诊断" class="headerlink" title="机器学习诊断"></a>机器学习诊断</h3><p>一可以了解学习算法内部哪部分合适或者不合适的测试，并且可以获得建议来改进学习算法。</p>
+<p>诊断发可能会花费一点时间，但绝对不会浪费时间。</p>
+<h2 id="评估预测"><a href="#评估预测" class="headerlink" title="评估预测"></a>评估预测</h2><p>一个预测函数针对训练用例可能误差很小，但是仍然不正确（过拟合导致）。因此为了评估预测函数，并给定了一组训练用例，我们可以将数据分离成两部分：一组训练集合和一组测试集合。通常<strong>训练集合</strong>占总数据集合的70%，剩下的30%用作<strong>测试集合</strong>。</p>
+<p>用这两个集合的新步骤如下：</p>
+<ol>
+<li>学习$\Theta$并使用训练集合最小化$J_{train}(\Theta)$。</li>
+<li>计算测试集合误差$J_{test}(\Theta)$</li>
+</ol>
+<h3 id="测试集合误差（代价）"><a href="#测试集合误差（代价）" class="headerlink" title="测试集合误差（代价）"></a>测试集合误差（代价）</h3><h4 id="线性回归"><a href="#线性回归" class="headerlink" title="线性回归"></a>线性回归</h4><p>$$<br>J_{test}(\Theta)=\frac{1}{2m_{test}}\sum_{i=1}^{m_{test}}{(h_\Theta(x_{test}^{(i)})-y_{test}^{(i)})^2}<br>$$</p>
+<h4 id="分类误差"><a href="#分类误差" class="headerlink" title="分类误差"></a>分类误差</h4><p>$$<br>err(h_\Theta(x),y)=1/0 \qquad if \; h_\Theta(x)\ge0.5 \,and \,y=0 \quad if \; h_\Theta(x)&lt;0.5\,and\,y=1<br>$$</p>
+<p>这个给了我们基于一个误分类二进制0或1误差结果。测试集合的测试误差的平均值为：<br>$$<br>error=\frac{1}{m_{test}}\sum_{i=1}^{m_{test}}{err(h_\Theta(x_{test}^{(i)}),y_{test}^{(i)})}<br>$$</p>
+
+                
+
+
+<p class="pink-link-context">
+    <a href="/2019/05/20/neural-networks-back-propagation/" rel="next" title="机器学习-神经网络参数和反向传播算法">
+    下一篇：机器学习-神经网络参数和反向传播算法
+  </a>
+</p>
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
 
 
 </div>
