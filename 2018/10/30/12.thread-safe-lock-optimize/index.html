@@ -1,0 +1,648 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    
+
+    <title>JVM系列-线程安全与锁优化 | One code man</title>
+    <meta name="author" content="wukai">
+    
+    <meta name="description" content="线程安全与锁优化先保证并发的安全性，再去追求并发的高效性。
+线程安全当多个线程访问一个对象时，如果不考虑这些线程再允许时环境下的调度和交替执行，也不需要进行额外的同步，或者再调用方法进行任何其他的协调操作，调用这个对象的行为豆可以获得正确的结果，那这个对象是线程安全的。
+Java语言中的线程安全为了">
+    
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta property="og:title" content="JVM系列-线程安全与锁优化">
+    <meta property="og:site_name" content="thinkerwolf">
+
+    
+    <meta property="og:image" content>
+    
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="alternate" href="/atom.xml" title="thinkerwolf" type="application/atom+xml">
+    <link rel="stylesheet" href="/css/lib/materialize.min.css">
+    <link rel="stylesheet" href="/css/lib/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+
+    
+        <link rel="stylesheet" href="/css/lib/prettify-tomorrow-night-eighties.css" type="text/css">
+    
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+</head>
+</html>
+
+<body>
+    <img src="/weixin_favicon.png" style="position: absolute; left: -9999px; opacity: 0; filter: alpha(opacity=0);">
+
+    <nav class="indigo">
+    <div class="nav-wrapper">
+        <a href="#" data-activates="main-menu" class="button-collapse">
+            <i class="fa fa-navicon"></i>
+        </a>
+        <div class>
+            <a href="/" class="brand-logo hide-on-med-and-down">thinkerwolf</a>
+            <ul class="right hide-on-med-and-down">
+                
+                    <li>
+                        <a class="menu-home " href="/">
+                            <i class="fa fa-home "></i>
+                            
+                            首页
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-archive " href="/archives">
+                            <i class="fa fa-archive "></i>
+                            
+                            归档
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                            <i class="fa fa-bookmark "></i>
+                            
+                            分类
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-reading " href="/reading">
+                            <i class="fa fa-book "></i>
+                            
+                            读书
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-about " href="/about">
+                            <i class="fa fa-user "></i>
+                            
+                            关于
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-search modal-trigger " href="#search">
+                            <i class="fa fa-search "></i>
+                            
+                            搜索
+                        </a>
+                    </li>
+                
+            </ul>
+            <div>
+    <ul class="side-nav indigo darken-1" id="main-menu">
+        
+        <li class="side-user">
+            <div class="row">
+                <div class="col s4 no-padding">
+                    <img class="avatar-image circle responsive-img" src="/images/avatar.png" alt="User Avatar">
+                </div>
+                <div class="info col s8 valign-wrapper no-padding">
+                    <div class="valign">
+                        <p class="name">吴凯</p>
+                        <p class="desc">Java后端/机器学习/技术宅</p>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-home " href="/">
+                    <i class="fa fa-home "></i>
+                    
+                    首页
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-archive " href="/archives">
+                    <i class="fa fa-archive "></i>
+                    
+                    归档
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                    <i class="fa fa-bookmark "></i>
+                    
+                    分类
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-reading " href="/reading">
+                    <i class="fa fa-book "></i>
+                    
+                    读书
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-about " href="/about">
+                    <i class="fa fa-user "></i>
+                    
+                    关于
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-search modal-trigger " href="#search">
+                    <i class="fa fa-search "></i>
+                    
+                    搜索
+                </a>
+            </li>
+        
+    </ul>
+
+    <ul class="side-nav indigo darken-1" id="category-menu">
+    
+
+            
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/机器学习/">
+                    机器学习 <span class="right">7 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Java/">
+                    Java <span class="right">10 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/linux/">
+                    linux <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+    </ul>
+</div>
+
+        </div>
+    </div>
+</nav>
+
+<div id="search" class="modal search-modal">
+    <div class="row">
+        <div class="input-field col s12">
+              <input id="search-input" type="text">
+              <label for="search-input">搜索</label>
+        </div>
+
+    </div>
+    <div id="search-result" class="search-result col s12">
+
+    </div>
+</div>
+
+
+    <main>
+        <div class="container main-container">
+    <nav class="page-nav hide-on-small-only">
+    <div class="nav-wrapper indigo">
+        <span class="breadcrumb">当前位置（分类目录）</span>
+        
+            
+    
+    
+    <a class="breadcrumb" href="/categories/Java/">Java</a>
+
+
+        
+
+        
+    </div>
+</nav>
+
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>JVM系列-线程安全与锁优化</h1>
+    
+
+
+            </div>
+            <time class="pink-link-context" datetime="2018-10-30T11:10:10.000Z"><a href="/2018/10/30/12.thread-safe-lock-optimize/">2018-10-30</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
+        
+            <a href="/tags/JVM/" class="chip pink lighten-1">JVM</a>
+        
+            <a href="/tags/Java/" class="chip pink lighten-1">Java</a>
+        
+    </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-1"><a class="section table-of-contents-link" href="#线程安全与锁优化"><span class="section table-of-contents-text">线程安全与锁优化</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#线程安全"><span class="section table-of-contents-text">线程安全</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#Java语言中的线程安全"><span class="section table-of-contents-text">Java语言中的线程安全</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#不可变"><span class="section table-of-contents-text">不可变</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#绝对线程安全"><span class="section table-of-contents-text">绝对线程安全</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#相对线程安全"><span class="section table-of-contents-text">相对线程安全</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#线程兼容"><span class="section table-of-contents-text">线程兼容</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#线程对立"><span class="section table-of-contents-text">线程对立</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#线程安全的实现方法"><span class="section table-of-contents-text">线程安全的实现方法</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#互斥同步"><span class="section table-of-contents-text">互斥同步</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#非阻塞同步"><span class="section table-of-contents-text">非阻塞同步</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#无同步方案"><span class="section table-of-contents-text">无同步方案</span></a></li></ol></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#锁优化"><span class="section table-of-contents-text">锁优化</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#自旋锁与自适应自旋"><span class="section table-of-contents-text">自旋锁与自适应自旋</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#消除锁"><span class="section table-of-contents-text">消除锁</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#锁粗化"><span class="section table-of-contents-text">锁粗化</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#轻量级锁"><span class="section table-of-contents-text">轻量级锁</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#偏向锁"><span class="section table-of-contents-text">偏向锁</span></a></li></ol></li></ol></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <h1 id="线程安全与锁优化"><a href="#线程安全与锁优化" class="headerlink" title="线程安全与锁优化"></a>线程安全与锁优化</h1><p>先保证并发的安全性，再去追求并发的高效性。</p>
+<h2 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h2><p>当多个线程访问一个对象时，如果不考虑这些线程再允许时环境下的调度和交替执行，也不需要进行额外的同步，或者再调用方法进行任何其他的协调操作，调用这个对象的行为豆可以获得正确的结果，那这个对象是线程安全的。</p>
+<h3 id="Java语言中的线程安全"><a href="#Java语言中的线程安全" class="headerlink" title="Java语言中的线程安全"></a>Java语言中的线程安全</h3><p>为了更加深入理解线程安全，可以不把线程安全当作一个非真即假的二元排他选项来看，按照线程安全的“安全程度”由强至弱排序，可以将Java语言中各种操作共享的数据分为以下5类：<strong>不可变</strong>、<strong>绝对线程安全</strong>、<strong>相对线程安全</strong>、<strong>线程兼容</strong>和<strong>线程对立</strong>。</p>
+<h4 id="不可变"><a href="#不可变" class="headerlink" title="不可变"></a>不可变</h4><p>在Java语言中，不可变的（Immutable）的对象一定是线程安全的，只要在一个不可变的对象被正确的构建出来（没有发生this引用逃逸的情况），那其外部的可见状态永远不会改变。“不可变”带来的安全性最简单和纯粹的。通过final关键字保证不可变。</p>
+<h4 id="绝对线程安全"><a href="#绝对线程安全" class="headerlink" title="绝对线程安全"></a>绝对线程安全</h4><p>绝对的线程安全完全满足线程安全的定义，通常需要付出很大的，甚至不切实际的代价。在Java API中标注自己是线程安全的类，大多不是绝对的线程安全。</p>
+<p>针对java.util.Vector是一个线程安全的容器，效率很低，但是是绝对的安全。</p>
+<h4 id="相对线程安全"><a href="#相对线程安全" class="headerlink" title="相对线程安全"></a>相对线程安全</h4><p>相对的线程安全就是我们通常意义上所讲的线程安全，他需要保证对这个对象单独的操作是线程安全的，我们在调用的时候不需要做额外的保障措施，但是对于一些特定顺序的连续调用，就可能在调用端使用额外的同步手段来保证调用的正确性。比如Vector、HashTable、ConcurrentHashMap。</p>
+<h4 id="线程兼容"><a href="#线程兼容" class="headerlink" title="线程兼容"></a>线程兼容</h4><p>线程兼容指对象本身不是线程安全的，但是可以通过在调用端正确使用同步手段来保证对象在并发环境中可以安全地使用。</p>
+<h4 id="线程对立"><a href="#线程对立" class="headerlink" title="线程对立"></a>线程对立</h4><p>线程对立是指无论调用端是否采取了同步措施，都无法在多线程环境中并发适用的代码。一个线程对立的例子是Thread类的suspend()和resume()方法。</p>
+<h3 id="线程安全的实现方法"><a href="#线程安全的实现方法" class="headerlink" title="线程安全的实现方法"></a>线程安全的实现方法</h3><p>如何实现线程安全和虚拟机如何实现同步与锁这两者都会有所涉及。</p>
+<h4 id="互斥同步"><a href="#互斥同步" class="headerlink" title="互斥同步"></a>互斥同步</h4><p>互斥同步（MutuaFExclusion &amp; Sychronization）是常见的一种并发正确保障手段。同步是指在多个线程并发访问共享数据时，保证共享数据在同一个时刻只被一个线程适用。而互斥是实现同步的一种手段，临界区(Critical Section)、互斥量（Mutex）、和信号量（Semaphore）都是主要的互斥实现方式。互斥是因，同步是果；互斥是方法，同步是目的。</p>
+<p>最基本的互斥同步手段就是synchronized关键字，synchronized关键字经过编译后，会在同步块前后形成monitorrenter和monitorexit这两个字节码指令。这两个字节码都需要一个reference类型的参数来指明要锁定和解锁的对象。如果没有指定，就是根据sychronized修饰的是实例方法还是类方法。</p>
+<p>Sychronized同步块对同一条线程是可重入的。Java的线程是映射到操作系统的原生线程上的，如果阻塞或唤醒一个线程，都需要操作系统来帮忙完成，这就需要从用户态转换到内核态中，状态转换需要耗费很多的处理器时间。对于简单的同步代码块，状态转换消耗的时间可能比用户代码执行的时间还长。所以synchronized是Java语言中一个重量级的操作。</p>
+<p>除了Sychronized之外，我们还可以使用java.util.concurrent（JUC）包中的重入锁来实现同步。一个是API层面的互斥锁，另一个表现为原生语法层面的互斥锁。相比synchronized，ReentrantLock增加一些高级功能：等待可中断、可实现公平锁以及锁可以绑定多个条件。</p>
+<ul>
+<li>等待可中断是指持有锁的线程长期不释放锁，正在等待的线程可以选择放弃等待。</li>
+<li>公平锁指多个线程等待一个锁，必须按照申请锁的时间顺序来依次获得锁。</li>
+<li>绑定多个条件值一个ReentrantLock可以同时绑定多个Condition对象，而sychronized中，锁对象的wait()和notify()或notifyAll()方法可以实现一个隐含的条件，如果要和多个条件关联，不得不额外添加一个锁，而ReentrantLock无需这么做，只需多次调用newCondition()方法即可。</li>
+</ul>
+<p>jdk1.6之后加入了许多对sychronized优化的措施，sychronized和ReentrantLock的性能基本完全持平了，所以JDK1.6之后性能因素不再是选择ReentrantLock的理由了，所以在sychronized能实现需求的情况下，优先考虑使用sychronized来同步。</p>
+<h4 id="非阻塞同步"><a href="#非阻塞同步" class="headerlink" title="非阻塞同步"></a>非阻塞同步</h4><p>互斥同步最主要的问题就是进行线程阻塞带来的性能问题，这个同步也叫阻塞同步。从处理方式来讲，互斥同步属于一种悲观的并发策略，总是认为不去做正确的同步措施，肯定就会出现问题，无论是否共享数据真的会出现竞争。随着指令集的发展，我们有另外一个选择：基于冲突检测的乐观并发策略，通俗来说，就是先进行操作，如果没有其他线程争用共享数据，操作成功；如果共享数据有争用，产生冲突，那就再采取补偿措施（比如不断重试，直到成功），这种乐观的并发策略许多实现都不需要挂起线程。这种称为非阻塞同步。</p>
+<p>为什么乐观锁并发需要“硬件指令集的发展”。因为需要操作和冲突检测这两个步骤具备原子性，如果再使用互斥同步就失去意义了，所以我们只能靠硬件来完成这件事情。硬件上可能需要多次完成的操作的行为在语义上值需要一条指令即可完成。</p>
+<ul>
+<li>测试并设置。</li>
+<li>获取并增加。</li>
+<li>交换。</li>
+<li>比较并交换。</li>
+<li>加载连接/条件存储。</li>
+</ul>
+<p>CAS指令需要3个操作数，分别是内存位置（简单理解为内存地址V）、旧的预期值（A）和新值（B）。CAS执行是，当且仅当V符合旧预期值，处理器用新值B更新V值，否则不执行更新，但是无论更新V的值，都会返回V的旧值。</p>
+<p>比如在incrementAndGet()方法中在一个无限循环中，不断尝试将一个比当前值大于1的新值赋值给自己，如果失败，说明获取设置操作有了修改，于是再次循环进行下一次操作，直到设置成功为止。</p>
+<h4 id="无同步方案"><a href="#无同步方案" class="headerlink" title="无同步方案"></a>无同步方案</h4><p>Java语言中，如果一个变量要被多个线程访问，可以使用volatile关键字声明为“易变得”；如果一个变量要被一个线程独享，可以使用java.lang.ThreadLocal类来实现线程本地存储功能。<br>volitile使用场景 //</p>
+<h2 id="锁优化"><a href="#锁优化" class="headerlink" title="锁优化"></a>锁优化</h2><p>JDK1.5到JDK1.6，HotSpot在这个版本花费大量精力去实现各种锁优化技术，如适应性自旋、锁消除、锁粗化、轻量级锁和偏向锁等。这些都是为了在线程间更高效的共享数据。</p>
+<h3 id="自旋锁与自适应自旋"><a href="#自旋锁与自适应自旋" class="headerlink" title="自旋锁与自适应自旋"></a>自旋锁与自适应自旋</h3><p>如果物理机器有一个以上处理器，能让两个或以上的线程同时并行执行，我们就可以让后面请求锁的那个线程“稍等一下”，但不放弃处理器的执行时间，看看持有锁的线程是否很快就会释放锁。为了让线程等待，我们只需要执行一个忙循环，这就是自旋锁。</p>
+<p>可以使用-XX:++UseSpinning参数来开启自旋锁。自旋锁不能代替阻塞，自旋锁虽然避免了线程切换开销，但是要占用处理器时间，如果锁被占用时间短，自旋等待效果很好。反之，如果锁占用时间很长，自旋的线程只会白白消耗CPU资源做无用功。所以，自旋锁必须有个等待的时间限度。</p>
+<p>JDK1.6引入自适应自旋锁。意味着自旋的时间不再固定，由前一次在同一个锁上的自选时间及锁的拥有者的状态来决定。有了自适应自旋，随着程序运行和性能监测信息的不断完善，虚拟机对程序锁的状况预测就越来越准确。</p>
+<h3 id="消除锁"><a href="#消除锁" class="headerlink" title="消除锁"></a>消除锁</h3><p>消除锁是指虚拟机即时编译器在运行时，对一些代码上同步，但是被检测到不可能存在共享数据竞争的锁进行消除。锁消除主要判定依据来源于逃逸分析的数据支持。分析一段代码，堆上的代码会不会逃逸出去从而被其他线程访问到。如果不会访问到，就可以认为是线程私有的，直接进行消除。</p>
+<h3 id="锁粗化"><a href="#锁粗化" class="headerlink" title="锁粗化"></a>锁粗化</h3><p>编写代码的时候，总是推荐将同步块的作用范围限制尽量小，这样是为了需要同步的操作数量尽可能小，如果存在锁竞争，等待锁也能尽快拿到锁。</p>
+<p>但是如果一系列连续的都对同一个对象反复加锁解锁，即使没有线程竞争，也会因为频繁进行互斥同步操作造成不必要的性能损失。所以如果虚拟机检测到一连串零碎的操作对同一个对象加锁，将会把加锁同步的范围扩展（粗化）到整个操作序列。</p>
+<h3 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h3><p>轻量级锁不是用来代替重量级锁的，本意是在没有多线程竞争前提下，减少传统的重量锁使用操作系统互斥量产生的性能消耗。</p>
+<h3 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h3>
+                
+<p class="pink-link-context">
+    <a href="/2019/05/06/machine-learning/" rel="next" title="机器学习-初识机器学习">
+    上一篇：机器学习-初识机器学习
+  </a>
+</p>
+
+
+
+<p class="pink-link-context">
+    <a href="/2018/10/21/9.early-compile-optimize/" rel="next" title="JVM系列-早期（编译器）优化">
+    下一篇：JVM系列-早期（编译器）优化
+  </a>
+</p>
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+</div>
+
+        <div class="fixed-action-btn float-sitemap">
+    <a class="btn-floating btn-large pink">
+      <i class="fa fa-caret-square-o-up"></i>
+    </a>
+    <ul>
+      <li><a class="btn-return-top btn-floating waves-effect green" title="回到顶部"><i class="fa fa-arrow-circle-o-up"></i></a></li>
+      <li><a class="btn-floating waves-effect button-collapse yellow darken-1" data-activates="main-menu" title="菜单"><i class="fa fa-navicon"></i></a></li>
+    </ul>
+  </div>
+
+    </main>
+    <footer class="page-footer indigo darken-1">
+    
+    <div class="footer-container container">
+        <div class="row">
+            
+            <div class="social-group col m4 s12">
+                <h5 class="white-text">社交</h5>
+                
+                    <a class="social-link" href="http://weibo.com/1956184117" target="_blank">
+                        <i class="fa fa-2x fa-weibo"></i>
+                    </a>
+                
+                    <a class="social-link" href="https://github.com/thinkerwolf" target="_blank">
+                        <i class="fa fa-2x fa-github"></i>
+                    </a>
+                
+                    <a class="social-link" href="/atom.xml" target="_blank">
+                        <i class="fa fa-2x fa-rss"></i>
+                    </a>
+                
+                
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+    <div class="site-visitors-container white-text">
+        <span>
+            <i class="fa fa-user"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+        </span>
+        <span>&nbsp;|&nbsp;</span>
+        <span>
+            <i class="fa fa-eye"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+
+
+            </div>
+            
+
+            
+            <div class="col m8 s12">
+                <h5 class="white-text">友情链接</h5>
+                
+                    <a class="social-link" href="http://raytaylorlin.com/" target="_blank">raytaylorism主题作者的技术博客</a>
+                
+                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">Github地址（测试友情链接）</a>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <div class="footer-copyright pink-link-context">
+        <div class="container">
+            © 2019 thinkerwolf.github.io, All rights reserved.
+            <p class="right" style="margin-top: 0;">本博客由 <a href="https://hexo.io">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/raytaylorlin/hexo-theme-raytaylorism">raytaylorism</a></p>
+        </div>
+    </div>
+</footer>
+
+
+    <noscript>
+    <div class="noscript">
+        <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+    </div>
+</noscript>
+<div class="noscript">
+    <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+</div>
+
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/materialize.min.js"></script>
+
+<script>
+    (function($) {
+        $(document).ready(function() {
+            // 隐藏禁用javascript（针对微信内置浏览器）的提示
+            $('.noscript').hide();
+
+            // 图片缩放效果
+            var $imgs = $('img').not('.slider-image').not('.avatar-image').not('.carousel-image').not('.card-cover-image').not('.qrcode');
+
+            // 给图片加上点击放大效果（materialbox插件）
+            $imgs.addClass('materialboxed').each(function(i, el) {
+                $(this).attr('data-caption', $(this).attr('alt') || ' ');
+            }).materialbox();
+
+            // 优化表格的显示
+            $('table').each(function() {
+                var $table = $(this);
+                // 除去多行代码的情况
+                if ($table.find('pre').length == 0) {
+                    $table.addClass('responsive-table striped bordered');
+                }
+            });
+
+            // 首页幻灯片
+            $('.slider').slider({indicators: true, full_width: true, interval: 8000});
+
+            $(".button-collapse").sideNav();
+            $(".category-menu").sideNav();
+
+            // 针对gallery post
+            $('.carousel').carousel({full_width: true});
+            $('.carousel-control.prev').click(function() {
+                $('.carousel').carousel('prev');
+            });
+            $('.carousel-control.next').click(function() {
+                $('.carousel').carousel('next');
+            });
+
+            // 文章目录
+            $('article').not('.simple-article').find('h1').add('h2').add('h3').add('h4').add('h5').add('h6').scrollSpy();
+
+            // 目录随屏幕滚动（防止目录过长越过footer）
+            var $toc = $('.toc');
+            var scrollTargetTop = 0;
+            $(window).scroll(function() {
+                var $activeLink = $toc.find('a.active.section');
+                if ($(window).scrollTop() < 100) {
+                    scrollTargetTop = 0;
+                } else {
+                    if ($activeLink[0]) {
+                        scrollTargetTop = $activeLink.offset().top - $toc.offset().top;
+                    }
+                }
+                $toc.css('top', '-' + scrollTargetTop + 'px');
+            });
+
+            // 修正文章目录的left-border颜色
+            var color = $('.table-of-contents-text').css('color');
+            $('.table-of-contents-link').css('border-left-color', color);
+
+            // 针对移动端做的优化：FAB按钮点击一下收回
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                $('.fixed-action-btn').addClass('click-to-toggle');
+            }
+            // 回到顶部
+            $('.btn-return-top').click(function() {
+                $('body, html').animate({
+                    scrollTop: 0
+                }, 500);
+            });
+
+            // 重置读书页面的Tab标签页的颜色
+            $('li.tab a').hover(function() {
+                $(this).toggleClass('text-lighten-4');
+            });
+            $('.indicator').addClass('pink lighten-2');
+
+            
+            // 添加new标签
+            $('.menu-reading, .menu-about').append('<span class="new badge pink"></span>');
+            
+
+            // 搜索功能
+            $('.modal-trigger').leanModal({
+                // 打开搜索框时自动聚焦
+                ready: function() {
+                    if ($('#search').is(":visible")) {
+                        $('#search-input').focus();
+                    }
+                }
+            });
+            var searchXml = "";
+            if (searchXml.length == 0) {
+             	searchXml = "search.xml";
+            }
+            var searchPath = "/" + searchXml;
+            initSearch(searchPath, 'search-input', 'search-result');
+        });
+
+        // 初始化搜索与匹配函数
+        var initSearch = function(path, search_id, content_id) {
+            'use strict';
+            $.ajax({
+                url: path,
+                dataType: "xml",
+                success: function(xmlResponse) {
+                    // get the contents from search data
+                    var datas = $("entry", xmlResponse).map(function() {
+                        return {
+                            title: $("title", this).text(),
+                            content: $("content", this).text(),
+                            url: $("url", this).text()
+                        };
+                    }).get();
+                    var $input = document.getElementById(search_id);
+                    var $resultContent = document.getElementById(content_id);
+                    $input.addEventListener('input', function() {
+                        var str = '<ul class=\"search-result-list\">';
+                        var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                        $resultContent.innerHTML = "";
+                        if (this.value.trim().length <= 0) {
+                            return;
+                        }
+                        // perform local searching
+                        datas.forEach(function(data) {
+                            var isMatch = true;
+                            var content_index = [];
+                            var data_title = data.title.trim().toLowerCase();
+                            var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                            var data_url = data.url;
+                            var index_title = -1;
+                            var index_content = -1;
+                            var first_occur = -1;
+                            // only match artiles with not empty titles and contents
+                            if (data_title != '' && data_content != '') {
+                                keywords.forEach(function(keyword, i) {
+                                    index_title = data_title.indexOf(keyword);
+                                    index_content = data_content.indexOf(keyword);
+                                    if (index_title < 0 && index_content < 0) {
+                                        isMatch = false;
+                                    } else {
+                                        if (index_content < 0) {
+                                            index_content = 0;
+                                        }
+                                        if (i == 0) {
+                                            first_occur = index_content;
+                                        }
+                                    }
+                                });
+                            }
+                            // show search results
+                            if (isMatch) {
+                                keywords.forEach(function(keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    data_title = data_title.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                });
+
+                                str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                                var content = data.content.trim().replace(/<[^>]+>/g, "");
+                                if (first_occur >= 0) {
+                                    // cut out 100 characters
+                                    var start = first_occur - 20;
+                                    var end = first_occur + 80;
+                                    if (start < 0) {
+                                        start = 0;
+                                    }
+                                    if (start == 0) {
+                                        end = 100;
+                                    }
+                                    if (end > content.length) {
+                                        end = content.length;
+                                    }
+                                    var match_content = content.substring(start, end);
+                                    // highlight all keywords
+                                    keywords.forEach(function(keyword) {
+                                        var regS = new RegExp(keyword, "gi");
+                                        match_content = match_content.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                    });
+
+                                    str += "<p class=\"search-result\">..." + match_content + "...</p>"
+                                }
+                                str += "</li>";
+                            }
+                        });
+                        str += "</ul>";
+                        $resultContent.innerHTML = str;
+                    });
+                }
+            });
+        }
+    })(jQuery);
+</script>
+
+
+<script src="/js/prettify.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("pre").addClass("prettyprint");
+        prettyPrint();
+    });
+</script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+</body>
+</html>

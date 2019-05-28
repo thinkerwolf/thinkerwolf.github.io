@@ -1,0 +1,694 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    
+
+    <title>JVM系列-虚拟机类加载机制 | One code man</title>
+    <meta name="author" content="wukai">
+    
+    <meta name="description" content="虚拟机类加载机制类加载时机类从加载到虚拟机中，到卸载出虚拟机中会经历7个生命周期：加载、验证、准备、解析、初始化、使用、卸载。
+
+Java虚拟机并没有强制约束程序加载的时机，每个虚拟机实现可以自由发挥，但是初始化阶段Java虚拟机则规定了有且只有5项必须初始化的时机，当然“加载”、“验证”、“准备”">
+    
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta property="og:title" content="JVM系列-虚拟机类加载机制">
+    <meta property="og:site_name" content="thinkerwolf">
+
+    
+    <meta property="og:image" content>
+    
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="alternate" href="/atom.xml" title="thinkerwolf" type="application/atom+xml">
+    <link rel="stylesheet" href="/css/lib/materialize.min.css">
+    <link rel="stylesheet" href="/css/lib/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+
+    
+        <link rel="stylesheet" href="/css/lib/prettify-tomorrow-night-eighties.css" type="text/css">
+    
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+</head>
+</html>
+
+<body>
+    <img src="/weixin_favicon.png" style="position: absolute; left: -9999px; opacity: 0; filter: alpha(opacity=0);">
+
+    <nav class="indigo">
+    <div class="nav-wrapper">
+        <a href="#" data-activates="main-menu" class="button-collapse">
+            <i class="fa fa-navicon"></i>
+        </a>
+        <div class>
+            <a href="/" class="brand-logo hide-on-med-and-down">thinkerwolf</a>
+            <ul class="right hide-on-med-and-down">
+                
+                    <li>
+                        <a class="menu-home " href="/">
+                            <i class="fa fa-home "></i>
+                            
+                            首页
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-archive " href="/archives">
+                            <i class="fa fa-archive "></i>
+                            
+                            归档
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                            <i class="fa fa-bookmark "></i>
+                            
+                            分类
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-reading " href="/reading">
+                            <i class="fa fa-book "></i>
+                            
+                            读书
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-about " href="/about">
+                            <i class="fa fa-user "></i>
+                            
+                            关于
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-search modal-trigger " href="#search">
+                            <i class="fa fa-search "></i>
+                            
+                            搜索
+                        </a>
+                    </li>
+                
+            </ul>
+            <div>
+    <ul class="side-nav indigo darken-1" id="main-menu">
+        
+        <li class="side-user">
+            <div class="row">
+                <div class="col s4 no-padding">
+                    <img class="avatar-image circle responsive-img" src="/images/avatar.png" alt="User Avatar">
+                </div>
+                <div class="info col s8 valign-wrapper no-padding">
+                    <div class="valign">
+                        <p class="name">吴凯</p>
+                        <p class="desc">Java后端/机器学习/技术宅</p>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-home " href="/">
+                    <i class="fa fa-home "></i>
+                    
+                    首页
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-archive " href="/archives">
+                    <i class="fa fa-archive "></i>
+                    
+                    归档
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                    <i class="fa fa-bookmark "></i>
+                    
+                    分类
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-reading " href="/reading">
+                    <i class="fa fa-book "></i>
+                    
+                    读书
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-about " href="/about">
+                    <i class="fa fa-user "></i>
+                    
+                    关于
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-search modal-trigger " href="#search">
+                    <i class="fa fa-search "></i>
+                    
+                    搜索
+                </a>
+            </li>
+        
+    </ul>
+
+    <ul class="side-nav indigo darken-1" id="category-menu">
+    
+
+            
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/机器学习/">
+                    机器学习 <span class="right">7 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Java/">
+                    Java <span class="right">10 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/linux/">
+                    linux <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+    </ul>
+</div>
+
+        </div>
+    </div>
+</nav>
+
+<div id="search" class="modal search-modal">
+    <div class="row">
+        <div class="input-field col s12">
+              <input id="search-input" type="text">
+              <label for="search-input">搜索</label>
+        </div>
+
+    </div>
+    <div id="search-result" class="search-result col s12">
+
+    </div>
+</div>
+
+
+    <main>
+        <div class="container main-container">
+    <nav class="page-nav hide-on-small-only">
+    <div class="nav-wrapper indigo">
+        <span class="breadcrumb">当前位置（分类目录）</span>
+        
+            
+    
+    
+    <a class="breadcrumb" href="/categories/Java/">Java</a>
+
+
+        
+
+        
+    </div>
+</nav>
+
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>JVM系列-虚拟机类加载机制</h1>
+    
+
+
+            </div>
+            <time class="pink-link-context" datetime="2018-10-18T11:10:10.000Z"><a href="/2018/10/18/6.jvm-classloader/">2018-10-18</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
+        
+            <a href="/tags/JVM/" class="chip pink lighten-1">JVM</a>
+        
+            <a href="/tags/Java/" class="chip pink lighten-1">Java</a>
+        
+    </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-1"><a class="section table-of-contents-link" href="#虚拟机类加载机制"><span class="section table-of-contents-text">虚拟机类加载机制</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#类加载时机"><span class="section table-of-contents-text">类加载时机</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#类加载过程"><span class="section table-of-contents-text">类加载过程</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#加载"><span class="section table-of-contents-text">加载</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#验证"><span class="section table-of-contents-text">验证</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#文件格式验证"><span class="section table-of-contents-text">文件格式验证</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#元数据校验"><span class="section table-of-contents-text">元数据校验</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#字节码验证"><span class="section table-of-contents-text">字节码验证</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#符号引用校验"><span class="section table-of-contents-text">符号引用校验</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#准备"><span class="section table-of-contents-text">准备</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#解析"><span class="section table-of-contents-text">解析</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#类或接口的解析"><span class="section table-of-contents-text">类或接口的解析</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#字段解析"><span class="section table-of-contents-text">字段解析</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#类方法解析"><span class="section table-of-contents-text">类方法解析</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#接口方法解析"><span class="section table-of-contents-text">接口方法解析</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#初始化"><span class="section table-of-contents-text">初始化</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#类加载器"><span class="section table-of-contents-text">类加载器</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#双亲委派模型"><span class="section table-of-contents-text">双亲委派模型</span></a></li></ol></li></ol></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <h1 id="虚拟机类加载机制"><a href="#虚拟机类加载机制" class="headerlink" title="虚拟机类加载机制"></a>虚拟机类加载机制</h1><h2 id="类加载时机"><a href="#类加载时机" class="headerlink" title="类加载时机"></a>类加载时机</h2><p>类从加载到虚拟机中，到卸载出虚拟机中会经历7个生命周期：加载、验证、准备、解析、初始化、使用、卸载。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/49302D40B180494592D60FF0BF6EC1CE/5166" alt="image"></p>
+<p>Java虚拟机并没有强制约束程序加载的时机，每个虚拟机实现可以自由发挥，但是初始化阶段Java虚拟机则规定了有且只有5项必须初始化的时机，当然“加载”、“验证”、“准备”、必须在前面。</p>
+<ul>
+<li>遇到new、getstatic、putstatic和invokestatic这四个指令必须初始化（static final修饰的除外，因为在编译期间被加载到方法取了）。</li>
+<li>使用java.lang.reflect包反射调用类的信息时必须先初始化。</li>
+<li>初始化一个类，如果发现父类没有初始化，先初始化父类。</li>
+<li>main启动类初始化。</li>
+<li>JDK1.7动态语言支持。</li>
+</ul>
+<h2 id="类加载过程"><a href="#类加载过程" class="headerlink" title="类加载过程"></a>类加载过程</h2><h3 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h3><p>“加载”是“类加载”中的一个过程，不要混淆。虚拟机在加载阶段需要完成以下三件事情。</p>
+<ul>
+<li>通过类的全限定名找到相应的二进制流。</li>
+<li>将静态的二进制流转化成方法区运行时数据结构。</li>
+<li>在内存中生成java.lang.Class对象用来访问方法去数据结构的入口。</li>
+</ul>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>是“连接”的第一步，确保Java字节流信息是否符合要求。“验证”阶段是十分重要的，这个阶段是否严谨决定了JVM能否承受攻击。如果输入的字节流不符合JVM的格式，则会抛出java.lang.VerifyError异常。大体上验证包括以下4部分。</p>
+<h4 id="文件格式验证"><a href="#文件格式验证" class="headerlink" title="文件格式验证"></a>文件格式验证</h4><p>验证字节流是否符合Class文件格式规范。</p>
+<ul>
+<li>是否以魔数开头。</li>
+<li>主、次版本号是否再虚拟机处理范围内。</li>
+<li>常量池的常量中是否有不被支持的常量类型。</li>
+<li>指向常量池的各种索引值中是否有指向不存在的常量或不符合类型的常量。</li>
+<li>CONSTANT_Utf8_info是否有不符合UTF-8编码的数据。</li>
+<li>Class文件中各个部分及文件本身是否有被删除或附加的其他信息。<h4 id="元数据校验"><a href="#元数据校验" class="headerlink" title="元数据校验"></a>元数据校验</h4>对字节码描述的信息进行语义分析。</li>
+<li>这个类是否有父类。</li>
+<li>这个类的父类是否继承了不被运行继承的类。（final）</li>
+<li>如果这个类不是抽象类，是否实现了父类或接口中的方法。</li>
+<li>类中的字段、方法是否与父类产生矛盾。<h4 id="字节码验证"><a href="#字节码验证" class="headerlink" title="字节码验证"></a>字节码验证</h4>字节码验证是整个验证过程中最复杂的一个阶段，通过数据流和控制流分析，确定程序的语义是否是合法、符合逻辑的。</li>
+<li>任意时刻操作数栈的数据类型与指令代码都能配合工作。</li>
+<li>保证跳转指令不会跳转到方法体以外的字节码指令上。</li>
+<li>保证方法体中的类型转换是有效的。<h4 id="符号引用校验"><a href="#符号引用校验" class="headerlink" title="符号引用校验"></a>符号引用校验</h4>最后一个校验发生在虚拟机将符合引用转化为直接引用的时候，对匹配信息进行校验。</li>
+<li>符号引用中通过字符串描述的全限定名是否能找到对应的类。</li>
+<li>指定类中是否存在符合方法的字段描述符及简单名称所描述的方法和字段。</li>
+<li>符号引用中的类、方法、字段的访问性能否被当前类访问。</li>
+</ul>
+<p>如果无法通过符号引用，则抛出java.lang.IncompatibleClassChangeError，java.lang.NoSuchMethodError，java.lang.NoSuchFieldError，java.lang.IllegalAccessError。</p>
+<h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>准备阶段是正式为类变量分配内存并设置类变量初始值的阶段。要注意两点，首先分配内存的只是类变量（static修饰的变量），不包括实例变量，实例变量在对象实例化时随着对象一起分配在Java堆中。假设一段代码<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> num = <span class="number">123</span>;</span><br></pre></td></tr></table></figure></p>
+<p>在准备阶段num的值0而不是123，因为给“num”赋值123是通过putstatic指令完成，而putstatic指令是放在编译的<client>()方法中，而这个是在初始化阶段才会执行。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> num = <span class="number">123</span>;</span><br></pre></td></tr></table></figure></client></p>
+<p>但是对“num”变量加上“final”修饰时，“num”才会变成123。</p>
+<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。</p>
+<ul>
+<li>符号引用：符号引用是以一组符号来描述所引用的目标，可以是任何形式的字面量，只要使用时能无歧义的定位到目标即可。</li>
+<li>直接引用：可以是直接指向目标的指针、偏移量、相对偏移量或者能间接定位到目标的句柄。直接引用是和虚拟机实现的内存布局相关的。</li>
+</ul>
+<p>虚拟机中并未规定的具体时间，只要求再执行<strong>anewarray、checkcast、getfield、getstatic、instanceof、invokedynamic、invokeinterface、inokespecial、invokestatic、invokevirtual、lcd、lcd_w、multianewarray、new、putfield和putstatic</strong>这16个用于操作符号引用字节码指令之前，对他们所使用的符号引用进行解析。</p>
+<h4 id="类或接口的解析"><a href="#类或接口的解析" class="headerlink" title="类或接口的解析"></a>类或接口的解析</h4><p>假设当前代码所处的类为D，如果要把一个为解析过的符号引用N解读为一个类或接口C的直接引用，虚拟机需要完成一下3个步骤。</p>
+<ol>
+<li>如果C不是一个数组类型，虚拟机将把代表N的全限定名传递给D的类加载器去加载这个类C。在加载过程中，由于元数据验证、字节码验证的需要，出发其他相关类的加载动作。一但这个过程出现错误，解析过程失败。</li>
+<li>如果C是一个数组类型，并且数组元素类型为对象，按照第1点规则加载元素类型，接着虚拟机生成此维度的数组对象。</li>
+<li>如果解析没出现异常，那么C在虚拟机中已变成一个有效的类或接口了。</li>
+</ol>
+<h4 id="字段解析"><a href="#字段解析" class="headerlink" title="字段解析"></a>字段解析</h4><p>首先对字段表内的class_index找到相应的CONSTANT_Class_info符号引用进行解析，就是字段所属的类或接口的符号引用。这个字段所属的类或接口用C表示，虚拟机按照一下步骤对C进行后续字段的搜索。</p>
+<ol>
+<li>如果C本身包含了简单名称和字段描述符与目标相匹配，查找结束。</li>
+<li>如果在C中实现的接口，将会按照继承关系从下往上递归搜索接口和父接口，如果接口中包含了简单名称和字段描述都与目标匹配，查找结束。</li>
+<li>否则，如果C不是java.lang.Object的话，按照继承关系从下往上搜索父类，如果父类包含了简单名称和字段描述都与目标相匹配，查找结束。</li>
+<li>否则，查找失败，抛出java.lang.NoSuchFieldError。</li>
+</ol>
+<h4 id="类方法解析"><a href="#类方法解析" class="headerlink" title="类方法解析"></a>类方法解析</h4><p>类方法的第一个步骤与字段解析一样，解析成功后，按照一下步骤进行后续类方法搜索。</p>
+<ol>
+<li>类方法和接口方法符号引用的常量类型定义是分开的，如果class_index的索引C是个接口，抛出java.lang.IncompatibleClassError异常。</li>
+<li>如果第一步通过，下面的步骤与字段解析相同。</li>
+<li>最后，如果查找失败，直接抛出java.lang.NoSuchMethodError异常。</li>
+</ol>
+<h4 id="接口方法解析"><a href="#接口方法解析" class="headerlink" title="接口方法解析"></a>接口方法解析</h4><p>与类方法解析类似。</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>类初始化时加载过程的最后一步。到了初始化阶段，才真正的执行类中定义的Java程序代码。初始化阶段是执行类构造器<client>()方法的过程。</client></p>
+<ul>
+<li><client>()方法是由编译器自动收集类中的所有类变量的赋值动作和静态语句块中的语句合并产生的，编译器收集的顺序是由语句在源文件中出现的顺序所决定的，静态语句块只能访问静态语句块之前的变量，定义在它之后的变量，可以赋值，但是不能访问。</client></li>
+<li><client>()方法与类的构造函数不同，不需要显式的调用父类构造器，虚拟机会在子类<client>()之前，父类的<client>()已经执行完毕。</client></client></client></li>
+<li>因为父类的<client>()先执行，所有父类的静态语句块要休先于子类的变量赋值操作。</client></li>
+<li><client>()方法如果对于类或接口不是必须的，如果一个类没有静态语句块，也没有对变量的赋值操作，那么编译器可以不为这个类生成<client>()方法。</client></client></li>
+<li>虚拟机会保证一个类的<client>()方法在多线程环境中被正确的加锁、同步。所以如果多个线程同时初始化一个类，那么只有一个线程去执行这个类的<client>()方法。</client></client></li>
+</ul>
+<h2 id="类加载器"><a href="#类加载器" class="headerlink" title="类加载器"></a>类加载器</h2><p>对于任意一个类，都需要由加载它的类加载器和这个类本身一同确立其他Java虚拟机中的唯一性。比较两个类Class是否相等，必须确定是否被同一个虚拟机加载。</p>
+<p>这个所指的“相等”，包括代表类的Class对象的<strong>equals()</strong>方法、<strong>isAssignableFrom()</strong>方法、<strong>isInstance()</strong>方法的返回结果，也包括<strong>instanceof</strong>关键字的判定等情况。</p>
+<h3 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h3><p>从Java虚拟机的角度来讲，只存在两种不同的类加载器：一种是<strong>启动类加载器</strong>（Bootstrap Classloader），这个类加载器使用C++语言实现，是虚拟机自身的一部分；另一种就是所有其他类加载器，都是由Java语言实现，独立于虚拟机外部，全部都继承与<strong>java.lang.ClassLoader</strong>。</p>
+<p>从开发人员的角度来看，类加载器还可以划分得更细致一些。</p>
+<ul>
+<li>启动类加载器：这个类负责将存在&lt;JAVA_HOME&gt;\lib目录中，并且是虚拟机识别的类库加载到虚拟机内存中。启动类加载器无法在程序中引用。</li>
+<li>扩展类加载器：这个是由sun.misc.Launcher$ExtClassLoader实现的，负责加载&lt;JAVA_HOME&gt;\lib\ext目录中的或者被java.ext.dirs系统变量指定的路径中的所有类库，开发这可以直接使用扩展类加载器。</li>
+<li>应用程序类加载器（Application ClassLoader）：这个类加载器由sun.misc.Launcher$AppClassLoader实现。这个类加载器是ClassLoader中的getSystemClassLoader()方法的返回值。负责加载用户类路径（ClassPath）上所指定的类库。</li>
+<li>自定义类加载器。</li>
+</ul>
+<p>双亲委派模型的过程是：如果一个类加载器收到了类加载的请求，首先不会自己尝试加载这个类，而是先把这个请求委派给父类加载器去完成，所有的加载请求最终都应该传送到顶层的启动类加载器中，只有当父类加载器无法完成这个加载请求，自加载器才会尝试自己去加载。</p>
+<p>使用双亲的一个好处就是Java类随着他的加载器一起具备了一种带有优先级的层次关系。比如java.lang.Object存放在rt.jar中，无论哪一个类加载器加载这个类，最终都是委派给处于顶端的启动类加载器进行加载，所以Object类在各种类加载器环境中都是同一个类，防止代码类混乱。</p>
+
+                
+<p class="pink-link-context">
+    <a href="/2018/10/19/7.jvm-bytecode-execute/" rel="next" title="JVM系列-虚拟机字节码执行引擎">
+    上一篇：JVM系列-虚拟机字节码执行引擎
+  </a>
+</p>
+
+
+
+<p class="pink-link-context">
+    <a href="/2018/10/17/5.class-file-structure/" rel="next" title="JVM系列-Class类文件结构">
+    下一篇：JVM系列-Class类文件结构
+  </a>
+</p>
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+</div>
+
+        <div class="fixed-action-btn float-sitemap">
+    <a class="btn-floating btn-large pink">
+      <i class="fa fa-caret-square-o-up"></i>
+    </a>
+    <ul>
+      <li><a class="btn-return-top btn-floating waves-effect green" title="回到顶部"><i class="fa fa-arrow-circle-o-up"></i></a></li>
+      <li><a class="btn-floating waves-effect button-collapse yellow darken-1" data-activates="main-menu" title="菜单"><i class="fa fa-navicon"></i></a></li>
+    </ul>
+  </div>
+
+    </main>
+    <footer class="page-footer indigo darken-1">
+    
+    <div class="footer-container container">
+        <div class="row">
+            
+            <div class="social-group col m4 s12">
+                <h5 class="white-text">社交</h5>
+                
+                    <a class="social-link" href="http://weibo.com/1956184117" target="_blank">
+                        <i class="fa fa-2x fa-weibo"></i>
+                    </a>
+                
+                    <a class="social-link" href="https://github.com/thinkerwolf" target="_blank">
+                        <i class="fa fa-2x fa-github"></i>
+                    </a>
+                
+                    <a class="social-link" href="/atom.xml" target="_blank">
+                        <i class="fa fa-2x fa-rss"></i>
+                    </a>
+                
+                
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+    <div class="site-visitors-container white-text">
+        <span>
+            <i class="fa fa-user"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+        </span>
+        <span>&nbsp;|&nbsp;</span>
+        <span>
+            <i class="fa fa-eye"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+
+
+            </div>
+            
+
+            
+            <div class="col m8 s12">
+                <h5 class="white-text">友情链接</h5>
+                
+                    <a class="social-link" href="http://raytaylorlin.com/" target="_blank">raytaylorism主题作者的技术博客</a>
+                
+                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">Github地址（测试友情链接）</a>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <div class="footer-copyright pink-link-context">
+        <div class="container">
+            © 2019 thinkerwolf.github.io, All rights reserved.
+            <p class="right" style="margin-top: 0;">本博客由 <a href="https://hexo.io">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/raytaylorlin/hexo-theme-raytaylorism">raytaylorism</a></p>
+        </div>
+    </div>
+</footer>
+
+
+    <noscript>
+    <div class="noscript">
+        <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+    </div>
+</noscript>
+<div class="noscript">
+    <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+</div>
+
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/materialize.min.js"></script>
+
+<script>
+    (function($) {
+        $(document).ready(function() {
+            // 隐藏禁用javascript（针对微信内置浏览器）的提示
+            $('.noscript').hide();
+
+            // 图片缩放效果
+            var $imgs = $('img').not('.slider-image').not('.avatar-image').not('.carousel-image').not('.card-cover-image').not('.qrcode');
+
+            // 给图片加上点击放大效果（materialbox插件）
+            $imgs.addClass('materialboxed').each(function(i, el) {
+                $(this).attr('data-caption', $(this).attr('alt') || ' ');
+            }).materialbox();
+
+            // 优化表格的显示
+            $('table').each(function() {
+                var $table = $(this);
+                // 除去多行代码的情况
+                if ($table.find('pre').length == 0) {
+                    $table.addClass('responsive-table striped bordered');
+                }
+            });
+
+            // 首页幻灯片
+            $('.slider').slider({indicators: true, full_width: true, interval: 8000});
+
+            $(".button-collapse").sideNav();
+            $(".category-menu").sideNav();
+
+            // 针对gallery post
+            $('.carousel').carousel({full_width: true});
+            $('.carousel-control.prev').click(function() {
+                $('.carousel').carousel('prev');
+            });
+            $('.carousel-control.next').click(function() {
+                $('.carousel').carousel('next');
+            });
+
+            // 文章目录
+            $('article').not('.simple-article').find('h1').add('h2').add('h3').add('h4').add('h5').add('h6').scrollSpy();
+
+            // 目录随屏幕滚动（防止目录过长越过footer）
+            var $toc = $('.toc');
+            var scrollTargetTop = 0;
+            $(window).scroll(function() {
+                var $activeLink = $toc.find('a.active.section');
+                if ($(window).scrollTop() < 100) {
+                    scrollTargetTop = 0;
+                } else {
+                    if ($activeLink[0]) {
+                        scrollTargetTop = $activeLink.offset().top - $toc.offset().top;
+                    }
+                }
+                $toc.css('top', '-' + scrollTargetTop + 'px');
+            });
+
+            // 修正文章目录的left-border颜色
+            var color = $('.table-of-contents-text').css('color');
+            $('.table-of-contents-link').css('border-left-color', color);
+
+            // 针对移动端做的优化：FAB按钮点击一下收回
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                $('.fixed-action-btn').addClass('click-to-toggle');
+            }
+            // 回到顶部
+            $('.btn-return-top').click(function() {
+                $('body, html').animate({
+                    scrollTop: 0
+                }, 500);
+            });
+
+            // 重置读书页面的Tab标签页的颜色
+            $('li.tab a').hover(function() {
+                $(this).toggleClass('text-lighten-4');
+            });
+            $('.indicator').addClass('pink lighten-2');
+
+            
+            // 添加new标签
+            $('.menu-reading, .menu-about').append('<span class="new badge pink"></span>');
+            
+
+            // 搜索功能
+            $('.modal-trigger').leanModal({
+                // 打开搜索框时自动聚焦
+                ready: function() {
+                    if ($('#search').is(":visible")) {
+                        $('#search-input').focus();
+                    }
+                }
+            });
+            var searchXml = "";
+            if (searchXml.length == 0) {
+             	searchXml = "search.xml";
+            }
+            var searchPath = "/" + searchXml;
+            initSearch(searchPath, 'search-input', 'search-result');
+        });
+
+        // 初始化搜索与匹配函数
+        var initSearch = function(path, search_id, content_id) {
+            'use strict';
+            $.ajax({
+                url: path,
+                dataType: "xml",
+                success: function(xmlResponse) {
+                    // get the contents from search data
+                    var datas = $("entry", xmlResponse).map(function() {
+                        return {
+                            title: $("title", this).text(),
+                            content: $("content", this).text(),
+                            url: $("url", this).text()
+                        };
+                    }).get();
+                    var $input = document.getElementById(search_id);
+                    var $resultContent = document.getElementById(content_id);
+                    $input.addEventListener('input', function() {
+                        var str = '<ul class=\"search-result-list\">';
+                        var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                        $resultContent.innerHTML = "";
+                        if (this.value.trim().length <= 0) {
+                            return;
+                        }
+                        // perform local searching
+                        datas.forEach(function(data) {
+                            var isMatch = true;
+                            var content_index = [];
+                            var data_title = data.title.trim().toLowerCase();
+                            var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                            var data_url = data.url;
+                            var index_title = -1;
+                            var index_content = -1;
+                            var first_occur = -1;
+                            // only match artiles with not empty titles and contents
+                            if (data_title != '' && data_content != '') {
+                                keywords.forEach(function(keyword, i) {
+                                    index_title = data_title.indexOf(keyword);
+                                    index_content = data_content.indexOf(keyword);
+                                    if (index_title < 0 && index_content < 0) {
+                                        isMatch = false;
+                                    } else {
+                                        if (index_content < 0) {
+                                            index_content = 0;
+                                        }
+                                        if (i == 0) {
+                                            first_occur = index_content;
+                                        }
+                                    }
+                                });
+                            }
+                            // show search results
+                            if (isMatch) {
+                                keywords.forEach(function(keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    data_title = data_title.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                });
+
+                                str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                                var content = data.content.trim().replace(/<[^>]+>/g, "");
+                                if (first_occur >= 0) {
+                                    // cut out 100 characters
+                                    var start = first_occur - 20;
+                                    var end = first_occur + 80;
+                                    if (start < 0) {
+                                        start = 0;
+                                    }
+                                    if (start == 0) {
+                                        end = 100;
+                                    }
+                                    if (end > content.length) {
+                                        end = content.length;
+                                    }
+                                    var match_content = content.substring(start, end);
+                                    // highlight all keywords
+                                    keywords.forEach(function(keyword) {
+                                        var regS = new RegExp(keyword, "gi");
+                                        match_content = match_content.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                    });
+
+                                    str += "<p class=\"search-result\">..." + match_content + "...</p>"
+                                }
+                                str += "</li>";
+                            }
+                        });
+                        str += "</ul>";
+                        $resultContent.innerHTML = str;
+                    });
+                }
+            });
+        }
+    })(jQuery);
+</script>
+
+
+<script src="/js/prettify.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("pre").addClass("prettyprint");
+        prettyPrint();
+    });
+</script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+</body>
+</html>

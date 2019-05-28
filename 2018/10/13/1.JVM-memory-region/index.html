@@ -1,0 +1,655 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    
+
+    <title>JVM系列-内存区域 | One code man</title>
+    <meta name="author" content="wukai">
+    
+    <meta name="description" content="JVM内存区域及泄露异常JVM运行数据区域
+程序计数器比较小的一块内存区域，可以理解为线程执行字节码的行号，在执行字节码时都需要通过改变这个计数器来执行跳转、分支、循环、异常处理、线程恢复。
+因为Java虚拟机的多线程是通过轮流切换并分配CPU执行时间方式来实现的，所以对于任何一个时刻，处理器只会处">
+    
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta property="og:title" content="JVM系列-内存区域">
+    <meta property="og:site_name" content="thinkerwolf">
+
+    
+    <meta property="og:image" content>
+    
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="alternate" href="/atom.xml" title="thinkerwolf" type="application/atom+xml">
+    <link rel="stylesheet" href="/css/lib/materialize.min.css">
+    <link rel="stylesheet" href="/css/lib/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+
+    
+        <link rel="stylesheet" href="/css/lib/prettify-tomorrow-night-eighties.css" type="text/css">
+    
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+</head>
+</html>
+
+<body>
+    <img src="/weixin_favicon.png" style="position: absolute; left: -9999px; opacity: 0; filter: alpha(opacity=0);">
+
+    <nav class="indigo">
+    <div class="nav-wrapper">
+        <a href="#" data-activates="main-menu" class="button-collapse">
+            <i class="fa fa-navicon"></i>
+        </a>
+        <div class>
+            <a href="/" class="brand-logo hide-on-med-and-down">thinkerwolf</a>
+            <ul class="right hide-on-med-and-down">
+                
+                    <li>
+                        <a class="menu-home " href="/">
+                            <i class="fa fa-home "></i>
+                            
+                            首页
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-archive " href="/archives">
+                            <i class="fa fa-archive "></i>
+                            
+                            归档
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                            <i class="fa fa-bookmark "></i>
+                            
+                            分类
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-reading " href="/reading">
+                            <i class="fa fa-book "></i>
+                            
+                            读书
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-about " href="/about">
+                            <i class="fa fa-user "></i>
+                            
+                            关于
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-search modal-trigger " href="#search">
+                            <i class="fa fa-search "></i>
+                            
+                            搜索
+                        </a>
+                    </li>
+                
+            </ul>
+            <div>
+    <ul class="side-nav indigo darken-1" id="main-menu">
+        
+        <li class="side-user">
+            <div class="row">
+                <div class="col s4 no-padding">
+                    <img class="avatar-image circle responsive-img" src="/images/avatar.png" alt="User Avatar">
+                </div>
+                <div class="info col s8 valign-wrapper no-padding">
+                    <div class="valign">
+                        <p class="name">吴凯</p>
+                        <p class="desc">Java后端/机器学习/技术宅</p>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-home " href="/">
+                    <i class="fa fa-home "></i>
+                    
+                    首页
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-archive " href="/archives">
+                    <i class="fa fa-archive "></i>
+                    
+                    归档
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                    <i class="fa fa-bookmark "></i>
+                    
+                    分类
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-reading " href="/reading">
+                    <i class="fa fa-book "></i>
+                    
+                    读书
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-about " href="/about">
+                    <i class="fa fa-user "></i>
+                    
+                    关于
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-search modal-trigger " href="#search">
+                    <i class="fa fa-search "></i>
+                    
+                    搜索
+                </a>
+            </li>
+        
+    </ul>
+
+    <ul class="side-nav indigo darken-1" id="category-menu">
+    
+
+            
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/机器学习/">
+                    机器学习 <span class="right">7 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Java/">
+                    Java <span class="right">10 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/linux/">
+                    linux <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+    </ul>
+</div>
+
+        </div>
+    </div>
+</nav>
+
+<div id="search" class="modal search-modal">
+    <div class="row">
+        <div class="input-field col s12">
+              <input id="search-input" type="text">
+              <label for="search-input">搜索</label>
+        </div>
+
+    </div>
+    <div id="search-result" class="search-result col s12">
+
+    </div>
+</div>
+
+
+    <main>
+        <div class="container main-container">
+    <nav class="page-nav hide-on-small-only">
+    <div class="nav-wrapper indigo">
+        <span class="breadcrumb">当前位置（分类目录）</span>
+        
+            
+    
+    
+    <a class="breadcrumb" href="/categories/Java/">Java</a>
+
+
+        
+
+        
+    </div>
+</nav>
+
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>JVM系列-内存区域</h1>
+    
+
+
+            </div>
+            <time class="pink-link-context" datetime="2018-10-13T10:10:10.000Z"><a href="/2018/10/13/1.JVM-memory-region/">2018-10-13</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
+        
+            <a href="/tags/JVM/" class="chip pink lighten-1">JVM</a>
+        
+            <a href="/tags/Java/" class="chip pink lighten-1">Java</a>
+        
+    </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-1"><a class="section table-of-contents-link" href="#JVM内存区域及泄露异常"><span class="section table-of-contents-text">JVM内存区域及泄露异常</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#JVM运行数据区域"><span class="section table-of-contents-text">JVM运行数据区域</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#程序计数器"><span class="section table-of-contents-text">程序计数器</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#虚拟机栈"><span class="section table-of-contents-text">虚拟机栈</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#本地方法栈"><span class="section table-of-contents-text">本地方法栈</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#堆"><span class="section table-of-contents-text">堆</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#方法区"><span class="section table-of-contents-text">方法区</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#运行时常量池"><span class="section table-of-contents-text">运行时常量池</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#直接内存区（堆外内存区）"><span class="section table-of-contents-text">直接内存区（堆外内存区）</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#JVM对象创建"><span class="section table-of-contents-text">JVM对象创建</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#对象的创建过程"><span class="section table-of-contents-text">对象的创建过程</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#对象的内存布局"><span class="section table-of-contents-text">对象的内存布局</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#对象的访问定位"><span class="section table-of-contents-text">对象的访问定位</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#OutMemoryError实战"><span class="section table-of-contents-text">OutMemoryError实战</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#堆溢出"><span class="section table-of-contents-text">堆溢出</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#虚拟机栈和本地方法栈溢出"><span class="section table-of-contents-text">虚拟机栈和本地方法栈溢出</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#方法区和运行时常量池溢出"><span class="section table-of-contents-text">方法区和运行时常量池溢出</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#直接内存溢出"><span class="section table-of-contents-text">直接内存溢出</span></a></li></ol></li></ol></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <h1 id="JVM内存区域及泄露异常"><a href="#JVM内存区域及泄露异常" class="headerlink" title="JVM内存区域及泄露异常"></a>JVM内存区域及泄露异常</h1><h2 id="JVM运行数据区域"><a href="#JVM运行数据区域" class="headerlink" title="JVM运行数据区域"></a>JVM运行数据区域</h2><p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/6922490D633040479A9C362851759831/3497" alt="image"></p>
+<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><p>比较小的一块内存区域，可以理解为线程执行字节码的行号，在执行字节码时都需要通过改变这个计数器来执行跳转、分支、循环、异常处理、线程恢复。</p>
+<p><strong>因为Java虚拟机的多线程是通过轮流切换并分配CPU执行时间方式来实现的，所以对于任何一个时刻，处理器只会处理一个线程中的流程</strong>，所以每个线程恢复时就需要一个计数器用来恢复。每个线程专享一个程序计数器。</p>
+<p>程序计数器是整个Java虚拟机中唯一没有定义OutOfMemoryError异常的内存区域。</p>
+<h3 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h3><p>与程序计数器类似，也是线程私有的，生命周期与线程相同。虚拟机栈描述的是方法的<strong>内存模型</strong>，每个方法执行时都会创建一个<strong>栈帧</strong>用来存储局部变量表、操作数栈、动态链表、方法出口等信息。</p>
+<p>Java虚拟机对虚拟机栈定义了两种异常，当栈深度大于虚拟机允许的深度，就会抛出StackOverflowError。当需要扩展的内存超出定义的最大内存，会抛出OutOfMemoryError。</p>
+<h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><p>与虚拟机栈类似，虚拟机栈执行的时字节码方法，而本地方法栈执行的是Native方法。也会抛出StackOverflowError和OutOfMemoryError。</p>
+<h3 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h3><p>是JVM中内存最大的一块，是所有线程共享的一块内存区域，几乎所有的对象实例和数组都是分配在上面，堆内存是垃圾收集器主要管理的区域，现代的JVM都是使用分代收集算法，所以堆可分为新生代和旧生代，新生代再细分可以分为Eden、From Survivor、To Survivor。</p>
+<p>堆无法分配或扩展时会抛出OutOfMemoryError异常。</p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>与堆一样，是线程共享区域，存储<strong>虚拟机加载的类信息</strong>、<strong>常量</strong>、<strong>静态变量</strong>、<strong>即时编译后的代码</strong>等。</p>
+<p>内存不足无法扩展抛出OutOfMemoryError异常。</p>
+<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><p>是方法区中的一个部分，Class文件除了有版本、属性、方法、接口等信息外，还有一项就是常量池，用于存放将编译期间产生的符号引用和字面量。</p>
+<p>运行时常量池具有动态性，String类中intern方法就是对常量池进行操作。内存不足抛出OutOfMemoryError异常。</p>
+<h3 id="直接内存区（堆外内存区）"><a href="#直接内存区（堆外内存区）" class="headerlink" title="直接内存区（堆外内存区）"></a>直接内存区（堆外内存区）</h3><p>NIO中的DirectByteBuffer就是直接对堆外内存进行操作。内存不足抛出OutOfMemoryError异常。</p>
+<h2 id="JVM对象创建"><a href="#JVM对象创建" class="headerlink" title="JVM对象创建"></a>JVM对象创建</h2><h3 id="对象的创建过程"><a href="#对象的创建过程" class="headerlink" title="对象的创建过程"></a>对象的创建过程</h3><p>虚拟机碰到一个new时，<strong>先检查指令参数是否在常量池中定位到一个符号，并检查符号引用代表的类是否被加载、解析和初始化过，如果没有则进行类加载过程</strong>。</p>
+<p><strong>随后为对象划分堆内存</strong>，对象所需的内存在类加载过程便已确定。对象内存划分方式有两种。</p>
+<ul>
+<li>如果是一块规整的内存，可以使用“指针碰撞”的方式，即在空闲内存中向后移动新对象需要的内存大小。</li>
+<li>如果内存是碎片化的，则虚拟机需要维护一个<strong>空闲列表</strong>，由虚拟机决定划分一块足够大的内存给新生对象。<strong>决定Java堆是否规整由采用哪种垃圾收集器决定。</strong></li>
+</ul>
+<p>创建对象是及其频繁的过程，可能有多个线程同时创建对象，这时就需要保证内存划分的线程安全性。有两种措施保证线程安全。</p>
+<ul>
+<li><strong>在分配内存空间处增加同步处理</strong>-虚拟机通过CAS和失败重试保证操作原子性。</li>
+<li><strong>为每个线程划分独立内存区域TLAB</strong>，创建新对象在制定的TLAB划分内存，只有在内存不足划分新的TLAB时才会进行同步操作。</li>
+</ul>
+<p>内存划分后，虚拟机为对象进行必要的设置，例如这个对象是哪个类的实例，如何找到类的元数据信息，对象的哈希码，对象的<strong>GC分代年龄信息</strong>。从虚拟机角度对象已经创建完成，但是对于程序角度还未完成，这是需要调用<init>方法完成对象初始化。</init></p>
+<h3 id="对象的内存布局"><a href="#对象的内存布局" class="headerlink" title="对象的内存布局"></a>对象的内存布局</h3><p>对象的内存区域分为三块：<strong>对象头</strong>，<strong>实例数据</strong>和<strong>对齐填充</strong>。</p>
+<p>对象头包含两部分。</p>
+<ul>
+<li>一部分存储对象自身的运行数据，比<strong>如哈希码（hashCode）</strong>、<strong>GC分代年龄</strong>、<strong>锁状态标志</strong>、<strong>线程持有锁</strong>、<strong>偏向线程ID</strong>、<strong>偏向时间戳</strong>等。这部分数据在32bit和64bit虚拟机分别是32位和64位大小。</li>
+<li>另一部分就是存储引用类信息的指针。</li>
+</ul>
+<p>实例数据部分是对象运行时真正的有效内容，也是对象各种类型字段的内容，有自定义的，也有从父类继承下来的，都需要被记录下来。</p>
+<h3 id="对象的访问定位"><a href="#对象的访问定位" class="headerlink" title="对象的访问定位"></a>对象的访问定位</h3><p>通过栈区的引用来对对象进行访问操作。<br><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/B0519D2A75DB4E2BB362D20B7AC505EA/3767" alt="image"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/9E460F6EC9894D7EA58A892D7C5D8E61/3769" alt="image"></p>
+<h2 id="OutMemoryError实战"><a href="#OutMemoryError实战" class="headerlink" title="OutMemoryError实战"></a>OutMemoryError实战</h2><h3 id="堆溢出"><a href="#堆溢出" class="headerlink" title="堆溢出"></a>堆溢出</h3><p>Java的堆时存储对象的区域，不断的新建对象就会引发堆溢出，-Xms和-Xmx参数是设置堆大小的虚拟机参数，通过参数-XX:HeapDumpOnOutOfMemoryError，当堆溢出时自动dump文件用于分析。</p>
+<p>解决这个区域的问题，首先利用工具（如Eclipse Memory Analyzar）将dump出的内存快照文件分析出来，在确认时内存泄漏（Memory Leak）还是内存溢出（Memory Overflow）问题。</p>
+<ul>
+<li>内存泄露，通过GC Roots查看收集器无法回收哪个对象。</li>
+<li>内存溢出，表示堆内存容量过小，通过适当调节参数增大堆内存大小。</li>
+</ul>
+<h3 id="虚拟机栈和本地方法栈溢出"><a href="#虚拟机栈和本地方法栈溢出" class="headerlink" title="虚拟机栈和本地方法栈溢出"></a>虚拟机栈和本地方法栈溢出</h3><p>一般虚拟机不区分虚拟机栈和本地方法栈，通常设置栈大小的虚拟机参数时-Xss。</p>
+<p>单线程下比较难重现OutOfMemoryError，一般会产生StackOverflow错误。但是在多线程的情况下就会产生OutOfMemoryError错误。</p>
+<p><strong>Java提供参数限制堆和方法区的内存，2G内存减去-Xmx和-MaxPermSize，剩下的内存由虚拟机栈和本地方法区瓜分。每个线程分到的栈容量就越大，可创建的线程数量就越少。</strong> </p>
+<p>如果是StackOverflowError通过查看堆栈信息可以比较容易定位问题所在，但是因为线程过多导致的内存溢出，这时可以通过减少堆容量和栈容量来换取更多的线程。</p>
+<h3 id="方法区和运行时常量池溢出"><a href="#方法区和运行时常量池溢出" class="headerlink" title="方法区和运行时常量池溢出"></a>方法区和运行时常量池溢出</h3><p>利用cglib频繁的动态创建新的类性信息可能导致内存溢出，大量的JSP页面和OSGI技术（被不同的类加载器加载也算不同的类性）也可能导致方法区内存溢出。</p>
+<h3 id="直接内存溢出"><a href="#直接内存溢出" class="headerlink" title="直接内存溢出"></a>直接内存溢出</h3><p>直接内存溢出，查看因为使用NIO的DirectByteBuffer导致的问题。</p>
+
+                
+<p class="pink-link-context">
+    <a href="/2018/10/14/2.gc-memory-allocation/" rel="next" title="JVM系列-垃圾收集器与内存分配策略">
+    上一篇：JVM系列-垃圾收集器与内存分配策略
+  </a>
+</p>
+
+
+
+<p class="pink-link-context">
+    <a href="/2017/08/13/linux-kernel/" rel="next" title="Linux系列-内核组成">
+    下一篇：Linux系列-内核组成
+  </a>
+</p>
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+</div>
+
+        <div class="fixed-action-btn float-sitemap">
+    <a class="btn-floating btn-large pink">
+      <i class="fa fa-caret-square-o-up"></i>
+    </a>
+    <ul>
+      <li><a class="btn-return-top btn-floating waves-effect green" title="回到顶部"><i class="fa fa-arrow-circle-o-up"></i></a></li>
+      <li><a class="btn-floating waves-effect button-collapse yellow darken-1" data-activates="main-menu" title="菜单"><i class="fa fa-navicon"></i></a></li>
+    </ul>
+  </div>
+
+    </main>
+    <footer class="page-footer indigo darken-1">
+    
+    <div class="footer-container container">
+        <div class="row">
+            
+            <div class="social-group col m4 s12">
+                <h5 class="white-text">社交</h5>
+                
+                    <a class="social-link" href="http://weibo.com/1956184117" target="_blank">
+                        <i class="fa fa-2x fa-weibo"></i>
+                    </a>
+                
+                    <a class="social-link" href="https://github.com/thinkerwolf" target="_blank">
+                        <i class="fa fa-2x fa-github"></i>
+                    </a>
+                
+                    <a class="social-link" href="/atom.xml" target="_blank">
+                        <i class="fa fa-2x fa-rss"></i>
+                    </a>
+                
+                
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+    <div class="site-visitors-container white-text">
+        <span>
+            <i class="fa fa-user"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+        </span>
+        <span>&nbsp;|&nbsp;</span>
+        <span>
+            <i class="fa fa-eye"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+
+
+            </div>
+            
+
+            
+            <div class="col m8 s12">
+                <h5 class="white-text">友情链接</h5>
+                
+                    <a class="social-link" href="http://raytaylorlin.com/" target="_blank">raytaylorism主题作者的技术博客</a>
+                
+                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">Github地址（测试友情链接）</a>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <div class="footer-copyright pink-link-context">
+        <div class="container">
+            © 2019 thinkerwolf.github.io, All rights reserved.
+            <p class="right" style="margin-top: 0;">本博客由 <a href="https://hexo.io">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/raytaylorlin/hexo-theme-raytaylorism">raytaylorism</a></p>
+        </div>
+    </div>
+</footer>
+
+
+    <noscript>
+    <div class="noscript">
+        <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+    </div>
+</noscript>
+<div class="noscript">
+    <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+</div>
+
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/materialize.min.js"></script>
+
+<script>
+    (function($) {
+        $(document).ready(function() {
+            // 隐藏禁用javascript（针对微信内置浏览器）的提示
+            $('.noscript').hide();
+
+            // 图片缩放效果
+            var $imgs = $('img').not('.slider-image').not('.avatar-image').not('.carousel-image').not('.card-cover-image').not('.qrcode');
+
+            // 给图片加上点击放大效果（materialbox插件）
+            $imgs.addClass('materialboxed').each(function(i, el) {
+                $(this).attr('data-caption', $(this).attr('alt') || ' ');
+            }).materialbox();
+
+            // 优化表格的显示
+            $('table').each(function() {
+                var $table = $(this);
+                // 除去多行代码的情况
+                if ($table.find('pre').length == 0) {
+                    $table.addClass('responsive-table striped bordered');
+                }
+            });
+
+            // 首页幻灯片
+            $('.slider').slider({indicators: true, full_width: true, interval: 8000});
+
+            $(".button-collapse").sideNav();
+            $(".category-menu").sideNav();
+
+            // 针对gallery post
+            $('.carousel').carousel({full_width: true});
+            $('.carousel-control.prev').click(function() {
+                $('.carousel').carousel('prev');
+            });
+            $('.carousel-control.next').click(function() {
+                $('.carousel').carousel('next');
+            });
+
+            // 文章目录
+            $('article').not('.simple-article').find('h1').add('h2').add('h3').add('h4').add('h5').add('h6').scrollSpy();
+
+            // 目录随屏幕滚动（防止目录过长越过footer）
+            var $toc = $('.toc');
+            var scrollTargetTop = 0;
+            $(window).scroll(function() {
+                var $activeLink = $toc.find('a.active.section');
+                if ($(window).scrollTop() < 100) {
+                    scrollTargetTop = 0;
+                } else {
+                    if ($activeLink[0]) {
+                        scrollTargetTop = $activeLink.offset().top - $toc.offset().top;
+                    }
+                }
+                $toc.css('top', '-' + scrollTargetTop + 'px');
+            });
+
+            // 修正文章目录的left-border颜色
+            var color = $('.table-of-contents-text').css('color');
+            $('.table-of-contents-link').css('border-left-color', color);
+
+            // 针对移动端做的优化：FAB按钮点击一下收回
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                $('.fixed-action-btn').addClass('click-to-toggle');
+            }
+            // 回到顶部
+            $('.btn-return-top').click(function() {
+                $('body, html').animate({
+                    scrollTop: 0
+                }, 500);
+            });
+
+            // 重置读书页面的Tab标签页的颜色
+            $('li.tab a').hover(function() {
+                $(this).toggleClass('text-lighten-4');
+            });
+            $('.indicator').addClass('pink lighten-2');
+
+            
+            // 添加new标签
+            $('.menu-reading, .menu-about').append('<span class="new badge pink"></span>');
+            
+
+            // 搜索功能
+            $('.modal-trigger').leanModal({
+                // 打开搜索框时自动聚焦
+                ready: function() {
+                    if ($('#search').is(":visible")) {
+                        $('#search-input').focus();
+                    }
+                }
+            });
+            var searchXml = "";
+            if (searchXml.length == 0) {
+             	searchXml = "search.xml";
+            }
+            var searchPath = "/" + searchXml;
+            initSearch(searchPath, 'search-input', 'search-result');
+        });
+
+        // 初始化搜索与匹配函数
+        var initSearch = function(path, search_id, content_id) {
+            'use strict';
+            $.ajax({
+                url: path,
+                dataType: "xml",
+                success: function(xmlResponse) {
+                    // get the contents from search data
+                    var datas = $("entry", xmlResponse).map(function() {
+                        return {
+                            title: $("title", this).text(),
+                            content: $("content", this).text(),
+                            url: $("url", this).text()
+                        };
+                    }).get();
+                    var $input = document.getElementById(search_id);
+                    var $resultContent = document.getElementById(content_id);
+                    $input.addEventListener('input', function() {
+                        var str = '<ul class=\"search-result-list\">';
+                        var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                        $resultContent.innerHTML = "";
+                        if (this.value.trim().length <= 0) {
+                            return;
+                        }
+                        // perform local searching
+                        datas.forEach(function(data) {
+                            var isMatch = true;
+                            var content_index = [];
+                            var data_title = data.title.trim().toLowerCase();
+                            var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                            var data_url = data.url;
+                            var index_title = -1;
+                            var index_content = -1;
+                            var first_occur = -1;
+                            // only match artiles with not empty titles and contents
+                            if (data_title != '' && data_content != '') {
+                                keywords.forEach(function(keyword, i) {
+                                    index_title = data_title.indexOf(keyword);
+                                    index_content = data_content.indexOf(keyword);
+                                    if (index_title < 0 && index_content < 0) {
+                                        isMatch = false;
+                                    } else {
+                                        if (index_content < 0) {
+                                            index_content = 0;
+                                        }
+                                        if (i == 0) {
+                                            first_occur = index_content;
+                                        }
+                                    }
+                                });
+                            }
+                            // show search results
+                            if (isMatch) {
+                                keywords.forEach(function(keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    data_title = data_title.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                });
+
+                                str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                                var content = data.content.trim().replace(/<[^>]+>/g, "");
+                                if (first_occur >= 0) {
+                                    // cut out 100 characters
+                                    var start = first_occur - 20;
+                                    var end = first_occur + 80;
+                                    if (start < 0) {
+                                        start = 0;
+                                    }
+                                    if (start == 0) {
+                                        end = 100;
+                                    }
+                                    if (end > content.length) {
+                                        end = content.length;
+                                    }
+                                    var match_content = content.substring(start, end);
+                                    // highlight all keywords
+                                    keywords.forEach(function(keyword) {
+                                        var regS = new RegExp(keyword, "gi");
+                                        match_content = match_content.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                    });
+
+                                    str += "<p class=\"search-result\">..." + match_content + "...</p>"
+                                }
+                                str += "</li>";
+                            }
+                        });
+                        str += "</ul>";
+                        $resultContent.innerHTML = str;
+                    });
+                }
+            });
+        }
+    })(jQuery);
+</script>
+
+
+<script src="/js/prettify.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("pre").addClass("prettyprint");
+        prettyPrint();
+    });
+</script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+</body>
+</html>

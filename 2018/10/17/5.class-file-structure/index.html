@@ -1,0 +1,714 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    
+
+    <title>JVM系列-Class类文件结构 | One code man</title>
+    <meta name="author" content="wukai">
+    
+    <meta name="description" content="Class类文件结构Class文件结构Class文件是以基础单位为8位的二进制流组成，各个数据项目严格按照顺序顺序的排列。如果某块数据超过8位，则将按照高位在先的顺序分割成多个8位数据，中间没有分隔符。Class文件由一系列无符号数和表组成的。
+无符号数属于基本数据类型，以u1，u2，u4，u8分别">
+    
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta property="og:title" content="JVM系列-Class类文件结构">
+    <meta property="og:site_name" content="thinkerwolf">
+
+    
+    <meta property="og:image" content>
+    
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="alternate" href="/atom.xml" title="thinkerwolf" type="application/atom+xml">
+    <link rel="stylesheet" href="/css/lib/materialize.min.css">
+    <link rel="stylesheet" href="/css/lib/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+
+    
+        <link rel="stylesheet" href="/css/lib/prettify-tomorrow-night-eighties.css" type="text/css">
+    
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+</head>
+</html>
+
+<body>
+    <img src="/weixin_favicon.png" style="position: absolute; left: -9999px; opacity: 0; filter: alpha(opacity=0);">
+
+    <nav class="indigo">
+    <div class="nav-wrapper">
+        <a href="#" data-activates="main-menu" class="button-collapse">
+            <i class="fa fa-navicon"></i>
+        </a>
+        <div class>
+            <a href="/" class="brand-logo hide-on-med-and-down">thinkerwolf</a>
+            <ul class="right hide-on-med-and-down">
+                
+                    <li>
+                        <a class="menu-home " href="/">
+                            <i class="fa fa-home "></i>
+                            
+                            首页
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-archive " href="/archives">
+                            <i class="fa fa-archive "></i>
+                            
+                            归档
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                            <i class="fa fa-bookmark "></i>
+                            
+                            分类
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-reading " href="/reading">
+                            <i class="fa fa-book "></i>
+                            
+                            读书
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-about " href="/about">
+                            <i class="fa fa-user "></i>
+                            
+                            关于
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-search modal-trigger " href="#search">
+                            <i class="fa fa-search "></i>
+                            
+                            搜索
+                        </a>
+                    </li>
+                
+            </ul>
+            <div>
+    <ul class="side-nav indigo darken-1" id="main-menu">
+        
+        <li class="side-user">
+            <div class="row">
+                <div class="col s4 no-padding">
+                    <img class="avatar-image circle responsive-img" src="/images/avatar.png" alt="User Avatar">
+                </div>
+                <div class="info col s8 valign-wrapper no-padding">
+                    <div class="valign">
+                        <p class="name">吴凯</p>
+                        <p class="desc">Java后端/机器学习/技术宅</p>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-home " href="/">
+                    <i class="fa fa-home "></i>
+                    
+                    首页
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-archive " href="/archives">
+                    <i class="fa fa-archive "></i>
+                    
+                    归档
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                    <i class="fa fa-bookmark "></i>
+                    
+                    分类
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-reading " href="/reading">
+                    <i class="fa fa-book "></i>
+                    
+                    读书
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-about " href="/about">
+                    <i class="fa fa-user "></i>
+                    
+                    关于
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-search modal-trigger " href="#search">
+                    <i class="fa fa-search "></i>
+                    
+                    搜索
+                </a>
+            </li>
+        
+    </ul>
+
+    <ul class="side-nav indigo darken-1" id="category-menu">
+    
+
+            
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/机器学习/">
+                    机器学习 <span class="right">7 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Java/">
+                    Java <span class="right">10 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/linux/">
+                    linux <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+    </ul>
+</div>
+
+        </div>
+    </div>
+</nav>
+
+<div id="search" class="modal search-modal">
+    <div class="row">
+        <div class="input-field col s12">
+              <input id="search-input" type="text">
+              <label for="search-input">搜索</label>
+        </div>
+
+    </div>
+    <div id="search-result" class="search-result col s12">
+
+    </div>
+</div>
+
+
+    <main>
+        <div class="container main-container">
+    <nav class="page-nav hide-on-small-only">
+    <div class="nav-wrapper indigo">
+        <span class="breadcrumb">当前位置（分类目录）</span>
+        
+            
+    
+    
+    <a class="breadcrumb" href="/categories/Java/">Java</a>
+
+
+        
+
+        
+    </div>
+</nav>
+
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>JVM系列-Class类文件结构</h1>
+    
+
+
+            </div>
+            <time class="pink-link-context" datetime="2018-10-17T11:10:10.000Z"><a href="/2018/10/17/5.class-file-structure/">2018-10-17</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
+        
+            <a href="/tags/JVM/" class="chip pink lighten-1">JVM</a>
+        
+            <a href="/tags/Java/" class="chip pink lighten-1">Java</a>
+        
+    </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-1"><a class="section table-of-contents-link" href="#Class类文件结构"><span class="section table-of-contents-text">Class类文件结构</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#Class文件结构"><span class="section table-of-contents-text">Class文件结构</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#魔数与Class版本"><span class="section table-of-contents-text">魔数与Class版本</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#常量池"><span class="section table-of-contents-text">常量池</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#访问标识"><span class="section table-of-contents-text">访问标识</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#类索引、父索引和接口索引集合"><span class="section table-of-contents-text">类索引、父索引和接口索引集合</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#字段表集合"><span class="section table-of-contents-text">字段表集合</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#方法表集合"><span class="section table-of-contents-text">方法表集合</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#属性表集合"><span class="section table-of-contents-text">属性表集合</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#字节码加载指令简介"><span class="section table-of-contents-text">字节码加载指令简介</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#加载和存储指令"><span class="section table-of-contents-text">加载和存储指令</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#运算指令"><span class="section table-of-contents-text">运算指令</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#类型转换指令"><span class="section table-of-contents-text">类型转换指令</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#对象创建与访问指令"><span class="section table-of-contents-text">对象创建与访问指令</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#操作数栈管理指令"><span class="section table-of-contents-text">操作数栈管理指令</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#控制转移指令"><span class="section table-of-contents-text">控制转移指令</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#方法调用和返回指令"><span class="section table-of-contents-text">方法调用和返回指令</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#异常处理指令"><span class="section table-of-contents-text">异常处理指令</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#同步指令"><span class="section table-of-contents-text">同步指令</span></a></li></ol></li></ol></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <h1 id="Class类文件结构"><a href="#Class类文件结构" class="headerlink" title="Class类文件结构"></a>Class类文件结构</h1><h2 id="Class文件结构"><a href="#Class文件结构" class="headerlink" title="Class文件结构"></a>Class文件结构</h2><p>Class文件是以基础单位为8位的二进制流组成，各个数据项目严格按照顺序顺序的排列。如果某块数据超过8位，则将按照高位在先的顺序分割成多个8位数据，中间没有分隔符。Class文件由一系列<strong>无符号数</strong>和<strong>表</strong>组成的。</p>
+<p>无符号数属于基本数据类型，以u1，u2，u4，u8分别代表1个字节、2字节、4字节、8字节。可以用来描述数量、索引或者编码成字符串。</p>
+<p>表由多个无符号数或者其他表组成的复合类型数据，整个Class文件实际上就是一张表。<br><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/8FF5EA42A52D4FFE870AEC078C105831/4442" alt="image"></p>
+<p>本节中所有的class字节码源代码为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.regin.proxy;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AsmSuper</span> </span>&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> String name;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">int</span> age;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(String string)</span> </span>&#123;</span><br><span class="line">		System.out.println(<span class="string">"Hello "</span> + string);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sayGoodBye</span><span class="params">(String string)</span> </span>&#123;</span><br><span class="line">		System.out.println(<span class="string">"Goodbye "</span> + string);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="魔数与Class版本"><a href="#魔数与Class版本" class="headerlink" title="魔数与Class版本"></a>魔数与Class版本</h3><p>每个Class文件的头4个字节代表魔术，用来确定此文件是否是虚拟机可接受的文件。使用魔术而不是扩展名标识主要是出去安全角度考虑，因为扩展名可以改变（0xCAFEBABE）。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/25E521C4BD124337AF25FF8EEB5CD8AC/4475" alt="image"></p>
+<p>紧接着魔数后面的<strong>4个字节</strong>是Class文件的版本号，<strong>第5和第6个字节</strong>是次版本号，<strong>第7和第8个字节</strong>是主版本号。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/A65718A0ED8149F88F066897F18C6345/4477" alt="image"></p>
+<h3 id="常量池"><a href="#常量池" class="headerlink" title="常量池"></a>常量池</h3><p>紧接着版本号后面是常量池入口，常量池可以理解为Class文件的资源仓库，是与其他项目关联最多的部分，也是占用Class文件最大部分之一。</p>
+<p>因为常量池的大小不是固定的，所以在利用<strong>两个字节</strong>表示常量池的大小(constant_pool_size)。<strong>计数是从1开始的</strong>。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/D1698DCE4ACA4E1A87A9278B4CB4FAB3/4497" alt="image"></p>
+<p>常量池主要放置两大类型：字面量和符号引用。常量比较接近Java常量的概念，比如文本字符串，final常量等。符号引用偏向编译方面概念，包括下面三种类型。</p>
+<ul>
+<li>类和接口全限定名。</li>
+<li>字段的名称和描述符。</li>
+<li>方法的名称和描述符。</li>
+</ul>
+<p>常量池中每一项都是一种表，目前JDK中一共有14种表，这些表都有一个共同特征，表的第一位是一个u1类型的标志位（tag），对应的取值见下表。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/7EBC8D37908646EA9C4E2DC346267923/5957" alt="image"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/7E20A41C2C6E47D1AEC364A50C67F67C/5960" alt="image"></p>
+<p>在进行javac编译的时候，并不像C或C++预先进行“连接”。在Class文件中不会保存连接、对象的内存等信息，只会在在虚拟机加载Class的时候动态生成连接信息，虚拟机运行时从常量池中获取类的符号引用，再在类创建或运行进行解析、翻译到具体的内存中。</p>
+<h3 id="访问标识"><a href="#访问标识" class="headerlink" title="访问标识"></a>访问标识</h3><p>常量池结束之后，紧接着的<strong>两个字节</strong>代表访问标识，标识一些类接口层次和访问信息。abstract、public、final等等。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/2AEAAE89C6B04500AEC68E4779B475B9/4548" alt="image"></p>
+<p>比如下图中的<strong>0x0021 = 0x0001 | 0x0020</strong>，就是代表这个类被public和super修饰。<br><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/A9BCEF7751B848D39AA51CAA6E87D789/4564" alt="image"></p>
+<h3 id="类索引、父索引和接口索引集合"><a href="#类索引、父索引和接口索引集合" class="headerlink" title="类索引、父索引和接口索引集合"></a>类索引、父索引和接口索引集合</h3><p>访问标识结束后，后面接着就是都是u2类型（两个字节）的类索引、父索引和接口索引集合。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/5D083DC3171E4249A66327DE469F7348/4591" alt="image"></p>
+<p>如上图中的0x0001, 0x0003, 0x0000代表类索引为1，父索引为3，接口索引集合为0</p>
+<h3 id="字段表集合"><a href="#字段表集合" class="headerlink" title="字段表集合"></a>字段表集合</h3><p>用于描述类或接口中声明的变量。一个变量包含<strong>字段作用域</strong>（public，private，protected）、<strong>是实例变量还是类变量</strong>（static修饰）、<strong>可见性</strong>（volitile修饰）、<strong>可变性</strong>（final修饰）、<strong>能否被序列化</strong>（transient修饰）、变量的类型、变量的名称。变量的修饰符可以通过一种类似bool的进行标识，但是变量类型和变量名称只能通过常量表进行寻找。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/WEBRESOURCEda12d36f4ecceecf126875de10ef6246/4635" alt="image"></p>
+<p>access_flags是访问标识的意思，对应上图中访问标识的相加。比如public final = ACC_PUBLIC | ACC_FINAL。</p>
+<p>跟随access_flags后面是两项索引值：name_index和descriptor_index。两者都是对常量池的引用，分别代表变量字段的名称以及字段变量的描述符。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/9182B79EAD5F4132B6414C9D6ECA4DE4/4690" alt="image"></p>
+<p>全限定名指一个类的完成包名加类名，只是把‘.’替换成了‘/’，后面加上‘;’用于区隔多个全限定名。比如“com/reign/TestClass;”。</p>
+<p>描述符的作用就是描述字段的数据类型、方法的参数列表和返回值。<br>对于数组类型每一维度将使用一个前置的“[”代表数据，比如String[][]的二维数据被表示成“[[Ljava/lang/String;”，一个int[]被表示成“[I”。</p>
+<p>方法的描述符是按照参数类型加返回类型组合而成的。比如void get()方法就是”V()”；java.lang.String.toString()就是”()Ljava/lang/String;”；int indexOf(char[] cs, double [] ds, int start)就是”([C[DI)I”。</p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/5A50DD06F17A44DC91A62784A6E49D46/4693" alt="image"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/dcff5c0bee1d6953fc0a1c4a49be81ca/xmlnote/173167F6999943B0B67A01326C389429/4759" alt="image"></p>
+<p>如上图0x0002代表类有两个字段，后面紧跟的0x001代表此字段被ACC_PUBLIC修饰，0x0004指向常量池index为4的常量表示字段名age，0x0005指向常量池中index为5的常量表示mi</p>
+<h3 id="方法表集合"><a href="#方法表集合" class="headerlink" title="方法表集合"></a>方法表集合</h3><p>方法表结构与字段表结构完全一致，包含访问标志（access_flags）、名称索引（name_index）、描述索引（description_index）。</p>
+<h3 id="属性表集合"><a href="#属性表集合" class="headerlink" title="属性表集合"></a>属性表集合</h3><h2 id="字节码加载指令简介"><a href="#字节码加载指令简介" class="headerlink" title="字节码加载指令简介"></a>字节码加载指令简介</h2><p>Java虚拟机指令是由一个字节长度、代表某种特定操作含义的数字（简称<strong>操作码</strong>，Opcode），以及跟随其后的几个参数（简称<strong>操作数</strong>，Operands）构成。</p>
+<p>Java虚拟机字节码是一种特点鲜明和缺点并存的指令集。因为操作码只有一个字节表示，所以操作码个数不能超过256个。又由于Class文件放弃了操作数长度对齐，这就意味着虚拟机处理超多一个字节长度的数据时需要将数据重构出来，一个16位（2个字节）的需要拆分出两个无符号字节进行处理。尽管这样虚拟机会损失一些性能，但是带来的好处也是非常明显的，没有了数据填充和对齐，这样能构建出更短小强悍<strong>编译代码</strong>。这种尽可能追求小数据量、高效率非常适合互联网传输。</p>
+<h3 id="加载和存储指令"><a href="#加载和存储指令" class="headerlink" title="加载和存储指令"></a>加载和存储指令</h3><p>加载和存储指令用来将数据在“栈帧”中“局部变量表”和“操作数栈”来回传输。这些指令包括：</p>
+<ul>
+<li>将一个局部变量加载到操作栈：<em>iload, iload_<n>, lload, lload_<n>, fload, fload_<n>, dload, dload_<n>, aload, aload_<n></n></n></n></n></n></em>。</li>
+<li>将一个操作数存储到局部变量表：<em>istore, istore_<n>, lstore, lstore_<n>, fstore, fstore_<n>, dstore, dstore_<n>, astore, astore_<n></n></n></n></n></n></em>。</li>
+<li>讲一个常量加载操作数帧：<em>bipush, sipush, ldc, ldc_w, ldc2_w, aconst_null, iconst_ml, iconst_<i>, lconst_<l>, fconst_<f>, dconst_<d></d></f></l></i></em>。</li>
+<li>扩充局部变量表的访问索引指令：<em>wide</em>。</li>
+</ul>
+<p>上面一些操作符是以<n>结尾（iload_<n>就包括iload_0, iload_1, iload_2, iload_3)，只是省略了后面的操作数，不用在执行操作前取操作数。</n></n></p>
+<h3 id="运算指令"><a href="#运算指令" class="headerlink" title="运算指令"></a>运算指令</h3><p>运算和算术指令用来对操作栈上数进行运算，并把结果重新存入局部变量表中。大体上指令分为两种：对整数的操作和对浮点数的操作，无论哪种运算，都使用JVM的数据类型。由于没有直接对byte、short、char、boolean的操作，应当使用int操作指令。整数和浮点数在溢出和被0除也有不同的表现。</p>
+<ul>
+<li>加法指令：iadd, ladd, fadd, dadd。</li>
+<li>减法指令：isub, lsub, fsub, dsub。</li>
+<li>乘法指令：imul, lmul, fmul, dmul。</li>
+<li>除法指令：idiv, ldiv, fdiv, ddiv。</li>
+<li>取余指令：irem, lrem, frem, drem。</li>
+<li>取反指令：ineg, lneg, fneg, dneg。</li>
+<li>位移指令：ishl, ishr, iushr, lshl, lshl, lushr。 </li>
+<li>按位或指令：ior, lor。</li>
+<li>按位与指令：iand, land。</li>
+<li>按位异或指令：ixor, lxor。</li>
+<li>局部变量自增指令：iinc。</li>
+<li>比较指令：dcmpg, dcmpl, fcmpg, fcmpl, lcmp。</li>
+</ul>
+<h3 id="类型转换指令"><a href="#类型转换指令" class="headerlink" title="类型转换指令"></a>类型转换指令</h3><p>将int或long窄化成整数类型T时候，转化过程仅仅是丢弃除最低位N个字节以外的内容，这将可能导致转换结果与输入结果有不同正负号。原来符号处于数值的最高位，高位被丢弃后，转换后的符号就取决于低N个字节的首位了。</p>
+<p>将一个浮点窄化成整数时：</p>
+<ul>
+<li>如果浮点是NaN，转化int或long的0值。</li>
+<li>如果浮点不是无穷大，利用向0舍入模式，获得整数v，如果v在目标类型T(int或long)内，结果就是v</li>
+<li>否则根据v的符号转成最大整数或最小整数。</li>
+</ul>
+<h3 id="对象创建与访问指令"><a href="#对象创建与访问指令" class="headerlink" title="对象创建与访问指令"></a>对象创建与访问指令</h3><p>虽然实例和数组都是对象，但是Java类实例和数组的创建于操作使用了不同的字节码指令。</p>
+<ul>
+<li>创建类实例指令：new</li>
+<li>创建数组指令：newarray、anewarray、multianewarray。</li>
+<li>访问类字段指令：getfield、putfield、getstatic、putstatic。</li>
+<li>数组元素加载到操作数栈：baload、saload、caload、iaload、laload、faload、daload、aaload。</li>
+<li>将数组元素存储到局部变量表：bastore、sastore、castore、iastore、lastore、fastore、dastore、aastore。</li>
+<li>取数组长度：arraylength。</li>
+<li>检查类实例类型指令：instanceof、checkcast</li>
+</ul>
+<h3 id="操作数栈管理指令"><a href="#操作数栈管理指令" class="headerlink" title="操作数栈管理指令"></a>操作数栈管理指令</h3><p>直接操作操作数栈的指令有：</p>
+<ul>
+<li>将操作数栈栈顶一个或两个元素出栈：pop、pop2。</li>
+<li>复制栈顶一个或两个数值并将复制的一个或两个数值重新压入栈顶：dup、dup2、dup_x1、dup2_x1、dup_x2、du2_x2。</li>
+<li>栈顶端两个数值互换：swap。</li>
+</ul>
+<h3 id="控制转移指令"><a href="#控制转移指令" class="headerlink" title="控制转移指令"></a>控制转移指令</h3><p>控制转移指令可以让JVM有条件或无条件的在指定位置进行执行。</p>
+<ul>
+<li>条件分支：ifep、iflt、ifle、ifne、ifgt、ifge、ifnull、ifnonnull、if_icmpeq、if_icmpne、if_icmplt、if_icmpgt、if_icmple、if_icmpge、if_acmpeq、if_acmpne。</li>
+<li>复合条件分支：tableswitch、loopupswitch。</li>
+<li>无条件分支：goto、goto_w、jsr、jsr_w、ret。</li>
+</ul>
+<p>与前面的运算指令类似，对与boolean、byte、short、char的条件分支操作，都是使用int进行操作。对于long、float、double的分支操作，会先执行运算指令dcmpg, dcmpl, fcmpg, fcmpl, lcmp等，返回一个int数值到操作数栈中，随后在执行int类型的条件分支操作完成整个分支跳转。由于各种类型的分支操作最后都会转化为int类型的分支操作，所以JVM中对int类型的条件分支是最为强大的。</p>
+<h3 id="方法调用和返回指令"><a href="#方法调用和返回指令" class="headerlink" title="方法调用和返回指令"></a>方法调用和返回指令</h3><ul>
+<li>invokevirtual：调用对象的方法。</li>
+<li>invokeinterface：调用接口方法。</li>
+<li>invokestatic：调用static方法。</li>
+<li>invokespecial：调用特殊方法，比如初始化方法、私有方法和父类方法。</li>
+<li>invokedynamic：调用运动时动态解析出调用点限定符所引用的方法。</li>
+</ul>
+<p>方法的返回与类型相关的，ireturn（boolean、byte、char、short、int）、lreturn、freturn、dreturn、areturn。还有个与void相关的return。</p>
+<h3 id="异常处理指令"><a href="#异常处理指令" class="headerlink" title="异常处理指令"></a>异常处理指令</h3><p>显式的throw都是使用athrow命令。</p>
+<h3 id="同步指令"><a href="#同步指令" class="headerlink" title="同步指令"></a>同步指令</h3><p>Java虚拟机支持方法级的同步和方法内一段指令序列的同步，同步是使用Monitor（管程）。</p>
+<p>方法级的同步是隐形的，无需通过字节码指令控制，Java虚拟机从常量池方法结构中获取方法的是否被ACC_SYNCHRONIZED修饰从而确定这个方法是否是同步方法。方法执行时，先查看方法是否持有ACC_SYNCHRONIZED访问标识，如果持有，会先要求成功获取管程后才能执行此方法，方法执行完毕后再释放管程。方法运行过程中，别的地方无法获取当前管程。如果方法执行抛出异常，将在异常抛出同步方法外时自动释放管程。</p>
+<p>同步一段指令集是使用sychronized块来实现的，Java虚拟机使用monitorenter和monitorexit来完成sychronized语义。为了时异常是能够保证monitorenter和monitorexit配对，JVM会自动生成可以包容一些异常的处理器，在这个处理器中执行monitorexit操作。</p>
+
+                
+<p class="pink-link-context">
+    <a href="/2018/10/18/6.jvm-classloader/" rel="next" title="JVM系列-虚拟机类加载机制">
+    上一篇：JVM系列-虚拟机类加载机制
+  </a>
+</p>
+
+
+
+<p class="pink-link-context">
+    <a href="/2018/10/16/4.case-analysis/" rel="next" title="JVM系列-优秀案例分析与实战">
+    下一篇：JVM系列-优秀案例分析与实战
+  </a>
+</p>
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+</div>
+
+        <div class="fixed-action-btn float-sitemap">
+    <a class="btn-floating btn-large pink">
+      <i class="fa fa-caret-square-o-up"></i>
+    </a>
+    <ul>
+      <li><a class="btn-return-top btn-floating waves-effect green" title="回到顶部"><i class="fa fa-arrow-circle-o-up"></i></a></li>
+      <li><a class="btn-floating waves-effect button-collapse yellow darken-1" data-activates="main-menu" title="菜单"><i class="fa fa-navicon"></i></a></li>
+    </ul>
+  </div>
+
+    </main>
+    <footer class="page-footer indigo darken-1">
+    
+    <div class="footer-container container">
+        <div class="row">
+            
+            <div class="social-group col m4 s12">
+                <h5 class="white-text">社交</h5>
+                
+                    <a class="social-link" href="http://weibo.com/1956184117" target="_blank">
+                        <i class="fa fa-2x fa-weibo"></i>
+                    </a>
+                
+                    <a class="social-link" href="https://github.com/thinkerwolf" target="_blank">
+                        <i class="fa fa-2x fa-github"></i>
+                    </a>
+                
+                    <a class="social-link" href="/atom.xml" target="_blank">
+                        <i class="fa fa-2x fa-rss"></i>
+                    </a>
+                
+                
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+    <div class="site-visitors-container white-text">
+        <span>
+            <i class="fa fa-user"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+        </span>
+        <span>&nbsp;|&nbsp;</span>
+        <span>
+            <i class="fa fa-eye"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+
+
+            </div>
+            
+
+            
+            <div class="col m8 s12">
+                <h5 class="white-text">友情链接</h5>
+                
+                    <a class="social-link" href="http://raytaylorlin.com/" target="_blank">raytaylorism主题作者的技术博客</a>
+                
+                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">Github地址（测试友情链接）</a>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <div class="footer-copyright pink-link-context">
+        <div class="container">
+            © 2019 thinkerwolf.github.io, All rights reserved.
+            <p class="right" style="margin-top: 0;">本博客由 <a href="https://hexo.io">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/raytaylorlin/hexo-theme-raytaylorism">raytaylorism</a></p>
+        </div>
+    </div>
+</footer>
+
+
+    <noscript>
+    <div class="noscript">
+        <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+    </div>
+</noscript>
+<div class="noscript">
+    <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+</div>
+
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/materialize.min.js"></script>
+
+<script>
+    (function($) {
+        $(document).ready(function() {
+            // 隐藏禁用javascript（针对微信内置浏览器）的提示
+            $('.noscript').hide();
+
+            // 图片缩放效果
+            var $imgs = $('img').not('.slider-image').not('.avatar-image').not('.carousel-image').not('.card-cover-image').not('.qrcode');
+
+            // 给图片加上点击放大效果（materialbox插件）
+            $imgs.addClass('materialboxed').each(function(i, el) {
+                $(this).attr('data-caption', $(this).attr('alt') || ' ');
+            }).materialbox();
+
+            // 优化表格的显示
+            $('table').each(function() {
+                var $table = $(this);
+                // 除去多行代码的情况
+                if ($table.find('pre').length == 0) {
+                    $table.addClass('responsive-table striped bordered');
+                }
+            });
+
+            // 首页幻灯片
+            $('.slider').slider({indicators: true, full_width: true, interval: 8000});
+
+            $(".button-collapse").sideNav();
+            $(".category-menu").sideNav();
+
+            // 针对gallery post
+            $('.carousel').carousel({full_width: true});
+            $('.carousel-control.prev').click(function() {
+                $('.carousel').carousel('prev');
+            });
+            $('.carousel-control.next').click(function() {
+                $('.carousel').carousel('next');
+            });
+
+            // 文章目录
+            $('article').not('.simple-article').find('h1').add('h2').add('h3').add('h4').add('h5').add('h6').scrollSpy();
+
+            // 目录随屏幕滚动（防止目录过长越过footer）
+            var $toc = $('.toc');
+            var scrollTargetTop = 0;
+            $(window).scroll(function() {
+                var $activeLink = $toc.find('a.active.section');
+                if ($(window).scrollTop() < 100) {
+                    scrollTargetTop = 0;
+                } else {
+                    if ($activeLink[0]) {
+                        scrollTargetTop = $activeLink.offset().top - $toc.offset().top;
+                    }
+                }
+                $toc.css('top', '-' + scrollTargetTop + 'px');
+            });
+
+            // 修正文章目录的left-border颜色
+            var color = $('.table-of-contents-text').css('color');
+            $('.table-of-contents-link').css('border-left-color', color);
+
+            // 针对移动端做的优化：FAB按钮点击一下收回
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                $('.fixed-action-btn').addClass('click-to-toggle');
+            }
+            // 回到顶部
+            $('.btn-return-top').click(function() {
+                $('body, html').animate({
+                    scrollTop: 0
+                }, 500);
+            });
+
+            // 重置读书页面的Tab标签页的颜色
+            $('li.tab a').hover(function() {
+                $(this).toggleClass('text-lighten-4');
+            });
+            $('.indicator').addClass('pink lighten-2');
+
+            
+            // 添加new标签
+            $('.menu-reading, .menu-about').append('<span class="new badge pink"></span>');
+            
+
+            // 搜索功能
+            $('.modal-trigger').leanModal({
+                // 打开搜索框时自动聚焦
+                ready: function() {
+                    if ($('#search').is(":visible")) {
+                        $('#search-input').focus();
+                    }
+                }
+            });
+            var searchXml = "";
+            if (searchXml.length == 0) {
+             	searchXml = "search.xml";
+            }
+            var searchPath = "/" + searchXml;
+            initSearch(searchPath, 'search-input', 'search-result');
+        });
+
+        // 初始化搜索与匹配函数
+        var initSearch = function(path, search_id, content_id) {
+            'use strict';
+            $.ajax({
+                url: path,
+                dataType: "xml",
+                success: function(xmlResponse) {
+                    // get the contents from search data
+                    var datas = $("entry", xmlResponse).map(function() {
+                        return {
+                            title: $("title", this).text(),
+                            content: $("content", this).text(),
+                            url: $("url", this).text()
+                        };
+                    }).get();
+                    var $input = document.getElementById(search_id);
+                    var $resultContent = document.getElementById(content_id);
+                    $input.addEventListener('input', function() {
+                        var str = '<ul class=\"search-result-list\">';
+                        var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                        $resultContent.innerHTML = "";
+                        if (this.value.trim().length <= 0) {
+                            return;
+                        }
+                        // perform local searching
+                        datas.forEach(function(data) {
+                            var isMatch = true;
+                            var content_index = [];
+                            var data_title = data.title.trim().toLowerCase();
+                            var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                            var data_url = data.url;
+                            var index_title = -1;
+                            var index_content = -1;
+                            var first_occur = -1;
+                            // only match artiles with not empty titles and contents
+                            if (data_title != '' && data_content != '') {
+                                keywords.forEach(function(keyword, i) {
+                                    index_title = data_title.indexOf(keyword);
+                                    index_content = data_content.indexOf(keyword);
+                                    if (index_title < 0 && index_content < 0) {
+                                        isMatch = false;
+                                    } else {
+                                        if (index_content < 0) {
+                                            index_content = 0;
+                                        }
+                                        if (i == 0) {
+                                            first_occur = index_content;
+                                        }
+                                    }
+                                });
+                            }
+                            // show search results
+                            if (isMatch) {
+                                keywords.forEach(function(keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    data_title = data_title.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                });
+
+                                str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                                var content = data.content.trim().replace(/<[^>]+>/g, "");
+                                if (first_occur >= 0) {
+                                    // cut out 100 characters
+                                    var start = first_occur - 20;
+                                    var end = first_occur + 80;
+                                    if (start < 0) {
+                                        start = 0;
+                                    }
+                                    if (start == 0) {
+                                        end = 100;
+                                    }
+                                    if (end > content.length) {
+                                        end = content.length;
+                                    }
+                                    var match_content = content.substring(start, end);
+                                    // highlight all keywords
+                                    keywords.forEach(function(keyword) {
+                                        var regS = new RegExp(keyword, "gi");
+                                        match_content = match_content.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                    });
+
+                                    str += "<p class=\"search-result\">..." + match_content + "...</p>"
+                                }
+                                str += "</li>";
+                            }
+                        });
+                        str += "</ul>";
+                        $resultContent.innerHTML = str;
+                    });
+                }
+            });
+        }
+    })(jQuery);
+</script>
+
+
+<script src="/js/prettify.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("pre").addClass("prettyprint");
+        prettyPrint();
+    });
+</script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+</body>
+</html>
