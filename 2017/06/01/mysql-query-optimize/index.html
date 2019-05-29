@@ -1,0 +1,701 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    
+
+    <title>MySQL查询优化 | One code man</title>
+    <meta name="author" content="wukai">
+    
+    <meta name="description" content="查询优化首先学会分析一个查询语句的执行过程，包括带索引和不带索引的查询区别。
+
+为数据表创建索引是数据库服务器更快查阅数据。
+如何写出以最大程序地利用那些索引，使用EXPLAIN语句检查MySQL服务器如期行事。
+编写查询影响服务器调度机制。
+修改服务器的操作以提高工作效率。
+分析底层硬件做什么，解">
+    
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta property="og:title" content="MySQL查询优化">
+    <meta property="og:site_name" content="thinkerwolf">
+
+    
+    <meta property="og:image" content>
+    
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="alternate" href="/atom.xml" title="thinkerwolf" type="application/atom+xml">
+    <link rel="stylesheet" href="/css/lib/materialize.min.css">
+    <link rel="stylesheet" href="/css/lib/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+
+    
+        <link rel="stylesheet" href="/css/lib/prettify-tomorrow-night-eighties.css" type="text/css">
+    
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+</head>
+</html>
+
+<body>
+    <img src="/weixin_favicon.png" style="position: absolute; left: -9999px; opacity: 0; filter: alpha(opacity=0);">
+
+    <nav class="indigo">
+    <div class="nav-wrapper">
+        <a href="#" data-activates="main-menu" class="button-collapse">
+            <i class="fa fa-navicon"></i>
+        </a>
+        <div class>
+            <a href="/" class="brand-logo hide-on-med-and-down">thinkerwolf</a>
+            <ul class="right hide-on-med-and-down">
+                
+                    <li>
+                        <a class="menu-home " href="/">
+                            <i class="fa fa-home "></i>
+                            
+                            首页
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-archive " href="/archives">
+                            <i class="fa fa-archive "></i>
+                            
+                            归档
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                            <i class="fa fa-bookmark "></i>
+                            
+                            分类
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-reading " href="/reading">
+                            <i class="fa fa-book "></i>
+                            
+                            读书
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-about " href="/about">
+                            <i class="fa fa-user "></i>
+                            
+                            关于
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-search modal-trigger " href="#search">
+                            <i class="fa fa-search "></i>
+                            
+                            搜索
+                        </a>
+                    </li>
+                
+            </ul>
+            <div>
+    <ul class="side-nav indigo darken-1" id="main-menu">
+        
+        <li class="side-user">
+            <div class="row">
+                <div class="col s4 no-padding">
+                    <img class="avatar-image circle responsive-img" src="/images/avatar.png" alt="User Avatar">
+                </div>
+                <div class="info col s8 valign-wrapper no-padding">
+                    <div class="valign">
+                        <p class="name">吴凯</p>
+                        <p class="desc">Java后端/机器学习/技术宅</p>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-home " href="/">
+                    <i class="fa fa-home "></i>
+                    
+                    首页
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-archive " href="/archives">
+                    <i class="fa fa-archive "></i>
+                    
+                    归档
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                    <i class="fa fa-bookmark "></i>
+                    
+                    分类
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-reading " href="/reading">
+                    <i class="fa fa-book "></i>
+                    
+                    读书
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-about " href="/about">
+                    <i class="fa fa-user "></i>
+                    
+                    关于
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-search modal-trigger " href="#search">
+                    <i class="fa fa-search "></i>
+                    
+                    搜索
+                </a>
+            </li>
+        
+    </ul>
+
+    <ul class="side-nav indigo darken-1" id="category-menu">
+    
+
+            
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Java/">
+                    Java <span class="right">10 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/机器学习/">
+                    机器学习 <span class="right">8 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/linux/">
+                    linux <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/MySQL/">
+                    MySQL <span class="right">4 篇</span></a>
+                
+            </li>
+
+        
+
+    </ul>
+</div>
+
+        </div>
+    </div>
+</nav>
+
+<div id="search" class="modal search-modal">
+    <div class="row">
+        <div class="input-field col s12">
+              <input id="search-input" type="text">
+              <label for="search-input">搜索</label>
+        </div>
+
+    </div>
+    <div id="search-result" class="search-result col s12">
+
+    </div>
+</div>
+
+
+    <main>
+        <div class="container main-container">
+    <nav class="page-nav hide-on-small-only">
+    <div class="nav-wrapper indigo">
+        <span class="breadcrumb">当前位置（分类目录）</span>
+        
+            
+    
+    
+    <a class="breadcrumb" href="/categories/MySQL/">MySQL</a>
+
+
+        
+
+        
+    </div>
+</nav>
+
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>MySQL查询优化</h1>
+    
+
+
+            </div>
+            <time class="pink-link-context" datetime="2017-06-01T13:07:54.000Z"><a href="/2017/06/01/mysql-query-optimize/">2017-06-01</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
+        
+            <a href="/tags/MySQL/" class="chip pink lighten-1">MySQL</a>
+        
+            <a href="/tags/数据库/" class="chip pink lighten-1">数据库</a>
+        
+    </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-1"><a class="section table-of-contents-link" href="#查询优化"><span class="section table-of-contents-text">查询优化</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#使用索引"><span class="section table-of-contents-text">使用索引</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#索引的优点"><span class="section table-of-contents-text">索引的优点</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#索引的缺点"><span class="section table-of-contents-text">索引的缺点</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#挑选索引"><span class="section table-of-contents-text">挑选索引</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#MySQL查询优化程序"><span class="section table-of-contents-text">MySQL查询优化程序</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#查询优化器的工作原理"><span class="section table-of-contents-text">查询优化器的工作原理</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#用EXPLAIN语句检查优化器操作"><span class="section table-of-contents-text">用EXPLAIN语句检查优化器操作</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#为提高查询效率挑选数据类型"><span class="section table-of-contents-text">为提高查询效率挑选数据类型</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#有效加载数据（插入数据）"><span class="section table-of-contents-text">有效加载数据（插入数据）</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#调度和锁定问题"><span class="section table-of-contents-text">调度和锁定问题</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#改变语句的执行优先级"><span class="section table-of-contents-text">改变语句的执行优先级</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#使用延迟插入"><span class="section table-of-contents-text">使用延迟插入</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#使用并发插入"><span class="section table-of-contents-text">使用并发插入</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#锁定级别与并发性"><span class="section table-of-contents-text">锁定级别与并发性</span></a></li></ol></li></ol></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <h1 id="查询优化"><a href="#查询优化" class="headerlink" title="查询优化"></a>查询优化</h1><p>首先学会分析一个查询语句的执行过程，包括带索引和不带索引的查询区别。</p>
+<ul>
+<li>为数据表创建索引是数据库服务器更快查阅数据。</li>
+<li>如何写出以最大程序地利用那些索引，使用EXPLAIN语句检查MySQL服务器如期行事。</li>
+<li>编写查询影响服务器调度机制。</li>
+<li>修改服务器的操作以提高工作效率。</li>
+<li>分析底层硬件做什么，解决物理限制，提高性能。</li>
+</ul>
+<h2 id="使用索引"><a href="#使用索引" class="headerlink" title="使用索引"></a>使用索引</h2><p>通常，能够造成查询速度最大差异的是索引的正确使用。在许多情况下，假如不适用索引，视图通过其他方式提高性能纯粹浪费时间。应该首先使用索引，在看看是否有其他解决办法。</p>
+<h3 id="索引的优点"><a href="#索引的优点" class="headerlink" title="索引的优点"></a>索引的优点</h3><p>一个没有索引的数据表就是无序的数据行集合。如下图没有索引的表，在进行查询时，就需要扫描表的每一行，如果数据量很大，且仅有少数记录匹配，工作过程效率很低。</p>
+<p><img src="/images/mysql/query_optimize1.png" alt="image"></p>
+<p>如果为company_num添加索引，如下图所示，如果以company_num = 13进行查询时，先定位到索引表，定位到索引表后会发现3条符合的记录，遇到14时就不在查询，此时就会直接返回数据，避免了全表扫描的问题。</p>
+<p><img src="/images/mysql/query_optimize2.png" alt="image"></p>
+<p>不同的存储引擎索引的实现细节也不相同。MyISAM数据表，索引值在索引文件里，一个表可以有多个索引，所有的索引都存储在同一个索引文件里。InnoDB没有按照数据行和索引值分开。InnoDB存储引擎使用的是一个表空间，在这个表空间管理着所有INnoDB类型数据表的数据和索引的存储。可以通过配置让InnoDB为每个数据表分别创建一个它字节表空间。</p>
+<p>假定一个带索引查询语句并分析其查询过程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT t1.i1, t2.i2, t2.i3 FROM t1 INNER JOIN t2 INNER JOIN t3 WHERE t1.i1 = t2.i2 AND t2.i2 = t3.i3;</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li>从数据表t1选择第一行，看这个数据包含什么样的值。</li>
+<li>对t2使用索引，直接找到与数据表t1的值相匹配的数据行，t3类似。</li>
+<li>对数据表t1的下一行数据行重复上面过程，知道检查数据表t1的所有数据行。</li>
+</ol>
+<p>使用索引就可以避免对t1、t2、t3进行笛卡尔积全表搜索导致搜索效率极其低下。</p>
+<p>MySQL使用索引的方式有以下几种。</p>
+<ul>
+<li>一是把WHERE字句所给的条件相匹配的数据行尽快找出来；二是关联操作中把与其他数据表里的数据行相匹配的数据尽快找出来。</li>
+<li>MIN()和MAX()函数的值可以迅速被找到。</li>
+<li>迅速完成ORDER BY和GROUP BY子句的分类和分组操作。</li>
+<li>避免为一个查询整体读取整行。、、、</li>
+</ul>
+<h3 id="索引的缺点"><a href="#索引的缺点" class="headerlink" title="索引的缺点"></a>索引的缺点</h3><p><strong>索然有缺点，但是使用索引是优点大于缺点。</strong></p>
+<p>首先，索引加快了检索速度，但是却降低了插入、删除和修改数值的速度。出现这种情况是因为写入一条数据行，会要求所有索引都要做出改变，索引越多，需要做出改变就越多。对于写操作多的数据表的索引更新方面的开销会很大。</p>
+<p>其次，索引占据磁盘空间，多个索引会占据更大的空间。</p>
+<h3 id="挑选索引"><a href="#挑选索引" class="headerlink" title="挑选索引"></a>挑选索引</h3><p><strong>尽量为用来搜索，分类或分组的数据列编制索引，不要为输出显示的数据列编制索引。</strong> 换句话说就是尽量在WHERE子句、JOIN子句、GROUP BY和ORDER子句编制索引。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SELECT</span><br><span class="line"> t1.col_name, t1.col_name   -&gt; do not add index</span><br><span class="line">FROM t1 </span><br><span class="line">    LEFT JOIN t2</span><br><span class="line">     ON t1.id = t2.id  -&gt; add index</span><br><span class="line">WHERE</span><br><span class="line">    t1.id &gt;= 190       -&gt; add index</span><br><span class="line">ORDER BY </span><br><span class="line">    t1.socre           -&gt; add index</span><br></pre></td></tr></table></figure></p>
+<p><strong>综合考虑各数据的维度势。</strong> 数据列的“维度”等于它所能容纳的==非重复值的个数==。维度越高，重复的值越少，索引的使用效果就越好。</p>
+<p><strong>对短小的值进行索引。</strong> 短小的值速度快，体积小，索引块可以容纳更多键值，减少每次需要检索的索引块。</p>
+<p><strong>为字符串值的前缀编索引。</strong><br>当为字符串列编索引，尽可能给出前缀长度（前缀长度中的字符都是唯一的或大部分唯一）。可以减少索引长度和体积和不必要的磁盘IO。</p>
+<p><strong>充分利用最左边的前缀（复合索引）。</strong> 如果创建了一个n个数据的复合索引。一个复合索引工作时就相当于n个索引，索引中最左边的数据列集合能够用于匹配数据行。假设一个索引是(state, city, zip)的组合，可以生效的索引组合为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">state, city, zip</span><br><span class="line">state, city</span><br><span class="line">state</span><br></pre></td></tr></table></figure></p>
+<p>==MySQL不能使用不包含最左边前缀的索引==。</p>
+<p><strong>让索引的类型与进行比较操作的类型保持匹配。</strong><br>InnoDB使用默认BTREE索引，MyISAM默认也是用BTREE索引，还有HASH索引可选择。</p>
+<p><strong>利用慢查询找出性能低劣的查询。</strong><br>使用mysqldumpslow查询日志，找出执行慢的查询语句。</p>
+<h2 id="MySQL查询优化程序"><a href="#MySQL查询优化程序" class="headerlink" title="MySQL查询优化程序"></a>MySQL查询优化程序</h2><p>使用<strong><em>EXPLAIN</em></strong>会返回SQL语句执行的信息。对分析SQL执行过程和检查优化器的操作过程非常有用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql &gt; EXPLAIN select task_id, intro, title, content from task left join blog on task_id = user_id;</span><br><span class="line">+----+-------------+-------+------------+------+---------------+-------------+---------+------------------+------+----------+-------------+</span><br><span class="line">| id | select_type | table | partitions | type | possible_keys | key         | key_len | ref              | rows | filtered | Extra       |</span><br><span class="line">+----+-------------+-------+------------+------+---------------+-------------+---------+------------------+------+----------+-------------+</span><br><span class="line">|  1 | SIMPLE      | task  | NULL       | ALL  | NULL          | NULL        | NULL    | NULL             |  1   |  100.00  | NULL        |</span><br><span class="line">|  1 | SIMPLE      | blog  | NULL       | ref  | blog_ibfk_1   | blog_ibfk_1 | 5       |test.task.task_id |    1 |   100.00 | Using where |</span><br><span class="line">+----+-------------+-------+------------+------+---------------+-------------+---------+------------------+------+----------+-------------+</span><br></pre></td></tr></table></figure></p>
+<h3 id="查询优化器的工作原理"><a href="#查询优化器的工作原理" class="headerlink" title="查询优化器的工作原理"></a>查询优化器的工作原理</h3><p><strong>对数据表进行分析。</strong><br>这将生成索引值分布情况的统计数据，可以帮助优化器对索引的使用作出更准确的效果。可以根据数据表的更新频率去手动调用ANALYSE TABLE语句。</p>
+<p><strong>使用EXPLAIN去分析语句。</strong></p>
+<p><strong>尽量使用数据类型相同的数据列进行比较。</strong> 数据类型不同相比于数据类型相同效率会低一些。比如INT/INT或BIGINT/BIGINT就比INT/BIGINT块。</p>
+<p><strong>使带有索引的列在比较表达式中单独出现。</strong><br>如果在函数调用中引用索引数据列，或者在计算表达式中引用索引数据列，会造成索引失效。比如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">WHERE index_col * 2 &lt; 4;</span><br><span class="line">WHERE index_col &lt; 4 / 2;</span><br></pre></td></tr></table></figure></p>
+<p>两者的效果完全不同，第一行索引失效，第二行索引正常运行。</p>
+<p><strong>不要在LIKE表达式中开始位置使用通配符。</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WHERE index_col LIKE &apos;%mac%&apos;</span><br></pre></td></tr></table></figure></p>
+<p>这将会使索引失效，可以使用如下方式使索引生效。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WHERE index_col LIKE &apos;mac%&apos;</span><br></pre></td></tr></table></figure></p>
+<p><strong>避免过多使用MySQL的自动类型转换。</strong></p>
+<h3 id="用EXPLAIN语句检查优化器操作"><a href="#用EXPLAIN语句检查优化器操作" class="headerlink" title="用EXPLAIN语句检查优化器操作"></a>用EXPLAIN语句检查优化器操作</h3><p>EXPLAIN语句提供的信息可以帮助我们了解优化器为处理各种语句而生成的执行计划。</p>
+<ul>
+<li>连接不同方式编写出来的查询命令是否影响索引使用。</li>
+<li>了解给数据表增加索引对优化器生成高效率执行计划的能力产生什么影响。</li>
+</ul>
+<p>假定一个EXPLAIN语句：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">EXPLAIN SELECT</span><br><span class="line">	b.user_id,</span><br><span class="line">	b.title,</span><br><span class="line">	b.content,</span><br><span class="line">	b1.title AS title1 </span><br><span class="line">FROM</span><br><span class="line">	blog b</span><br><span class="line">	INNER JOIN blog1 b1 ON b1.user_id = b.user_id ;</span><br></pre></td></tr></table></figure></p>
+<p>可以查看在不加索引和加索引在Explain的结果<br><img src="/images/mysql/query_optimize3.png" alt="image"></p>
+<p><img src="/images/mysql/query_optimize4.png" alt="image"></p>
+<h3 id="为提高查询效率挑选数据类型"><a href="#为提高查询效率挑选数据类型" class="headerlink" title="为提高查询效率挑选数据类型"></a>为提高查询效率挑选数据类型</h3><p><strong>尽量使用数值操作，少用字符串操作。</strong><br>数值运算通常比字符串运算更快。</p>
+<p><strong>可以使用“小类型”，就不要使用“大类型”。</strong><br>“小”类型比“大”的处理速度更快，尤其是字符串类型。而且小类型在磁盘读写上的开销更小。</p>
+<p><strong>选择适用于对应存储引擎的格式。</strong><br>对于MyISAM数据表，应该尽量选用固定长度的数据列而不是可变长度的数据列。</p>
+<p><strong>尽量把数据列声明为NOT NULL。</strong><br>如果数据列具有NOT NULL属性，对它的处理可以更快完成，因为MySQL不需要在查询处理期间检查该数据列的值是不是NULL。还可以为每个数据航节约一个位的存储空间。</p>
+<p><strong>考虑使用ENUM数据列。</strong></p>
+<p><strong>利用PROCEDURE ANALYSE()语句。</strong><br>分析数据表，看看它对数据的声明提出哪些建议。</p>
+<p><strong>对容易产生碎片的数据表进行整理。</strong><br>数据表-尤其是哪些包含可变长度数据列的数据表-往往因为数据的大量修改产生碎片。随着时间推移，你将不得不读取更多的存储块才能把数据行读入内存，无疑会对性能产生影响。定期使用mysqldump工具删除表再重新创建是一个解决碎片的方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldump -uroot -p123 db_name tbl_name &gt; dump.sql</span><br></pre></td></tr></table></figure></p>
+<p><strong>把数据压缩到BLOB或TEXT数据列。</strong><br>将数据转换成XML或者JSON字符串进行存储到BLOB或者TEXT中。</p>
+<p><strong>**使用人造索引。</strong><br>具体做法是根据其他数据列计算出一个散列值存储在另一个数据列中，然后通过搜索散列值去检索数据。（这种方法只是用精确查找，不适用&gt;=、&lt;=、&lt;、&gt;查找）可以使用MD5()、SHA1()或CRC32()都可以生产散列。数据类型的散列值的存储效率是非常高效的。人造散列对BLOB或TEXT数据列的检索非常有效。</p>
+<p><strong>尽量把BLOB或TEXT数据剥离到单独的一张表中。</strong><br>既能减少原始数据表的碎片，享受固定长度带来的好处。又你会在SELECT *原始表时把大量的数据通过网络传输给客户端。</p>
+<h2 id="有效加载数据（插入数据）"><a href="#有效加载数据（插入数据）" class="headerlink" title="有效加载数据（插入数据）"></a>有效加载数据（插入数据）</h2><ul>
+<li>批量加载的效率比单数据行加载效率高。因为键缓存在每一次输入记录加载之后都不需要刷新，可以在批量记录结束的时候再刷新。越是减少键缓存的刷新次数，数据加载越快。</li>
+<li>加载有索引的数据表比加载无索引的数据表慢一些。</li>
+<li>较短的SQL语句的数据加载比较长的语句快。</li>
+</ul>
+<p>如果使用多个INSERT语句，尽可能对他们分组来减少索引的刷新次数。对于事务性存储引擎，可以通过发起事务来实现：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">START TRANSACTION;</span><br><span class="line">INSERT INTO tbl_name ...;</span><br><span class="line">INSERT INTO tbl_name ...;</span><br><span class="line">INSERT INTO tbl_name ...;</span><br><span class="line">...</span><br><span class="line">COMMIT;</span><br></pre></td></tr></table></figure></p>
+<p>对于非事务形存储引擎，可以采取锁定的方式实现：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">LOCL TABLES `tbl_name` WRITE;</span><br><span class="line">INSERT INTO tbl_name ...;</span><br><span class="line">INSERT INTO tbl_name ...;</span><br><span class="line">INSERT INTO tbl_name ...;</span><br><span class="line">...</span><br><span class="line">UNLOCKTABLES;</span><br></pre></td></tr></table></figure></p>
+<p>对于MyISAM数据表，减少索引刷新次数的另一个策略是使用DELAY_KEY_WRITE数据表选项。使用这个选项后，数据行会像往常写入数据，但是键缓存只在有必要时刷新。想要使用DELAY_KEY_WRITE，必须在启动mysqld是给出–delay-key-write=ALL选项。</p>
+<p>在为MyISMA数据表开启“键值缓写”的功能时，在服务器挂掉后可能会让索引值丢失，但是MyISAM可以根据数据行修复。应该在启动服务器给出–myisam-recover=FORCE选项。</p>
+<p>你通常希望避免被写入的数据表长时间运行SELECT查询，这样会导致争用问题和较差的性能。如果写入大部分是INSERT操作，可以先将数据写到辅助表中，然后定期将这些数据写到主表中，使用这样办法的前提是对SELECT查询数据实时性要求不高。</p>
+<h2 id="调度和锁定问题"><a href="#调度和锁定问题" class="headerlink" title="调度和锁定问题"></a>调度和锁定问题</h2><p>可以改变语句的调度优先权，可以使查询更协调的工作。改变优先权可以用于改变这个策略的选项。MySQL的默认调度策略如下。</p>
+<ul>
+<li>写入比读取有更高的优先权。</li>
+<li>对数据表的写操作必须按照请求顺序来。</li>
+<li>对同一个数据表进行的读操作可以同时进行。</li>
+</ul>
+<p>对于MyISAM、MERGE、MEMORY存储引擎，调度策略是由数据表帮助完成的。只要有客户程序访问数据表，必须先锁定它。客户端完成操作，锁定才能解除。</p>
+<p>MySQL提供一些语句修饰符改变调度策略。一是DELETE、INSERT、LOAD DATA、REPLACE、UPDATE中使用LOW_PRIORITY。而是在SELECT和INSERT语句中使用HIGH_PRIORITY关键字，三是在INSERT和REPLACE语句中使用DELAYED关键字。</p>
+<p>LOW_PRIORITY和HIGH_PRIORITY只对支持锁定功能的存储引擎（MyISAM、MERGE、MEMORY）有效果。DELAYED限定在MyISAM、MEMORY、ARCHIVE。</p>
+<h3 id="改变语句的执行优先级"><a href="#改变语句的执行优先级" class="headerlink" title="改变语句的执行优先级"></a>改变语句的执行优先级</h3><p>通过改变SELECT和INSERT的优先级来确定SELECT和INSERT的顺序。通过LOW_PRIORITY和HIGH_PRIORITY关键字来确定SELECT和INSERT语句的优先级。</p>
+<h3 id="使用延迟插入"><a href="#使用延迟插入" class="headerlink" title="使用延迟插入"></a>使用延迟插入</h3><p>//TODO</p>
+<h3 id="使用并发插入"><a href="#使用并发插入" class="headerlink" title="使用并发插入"></a>使用并发插入</h3><p>//TODO</p>
+<h3 id="锁定级别与并发性"><a href="#锁定级别与并发性" class="headerlink" title="锁定级别与并发性"></a>锁定级别与并发性</h3><p>//TODO</p>
+
+                
+<p class="pink-link-context">
+    <a href="/2017/06/01/mysql-sql/" rel="next" title="MySQL使用SQL管理数据">
+    上一篇：MySQL使用SQL管理数据
+  </a>
+</p>
+
+
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+</div>
+
+        <div class="fixed-action-btn float-sitemap">
+    <a class="btn-floating btn-large pink">
+      <i class="fa fa-caret-square-o-up"></i>
+    </a>
+    <ul>
+      <li><a class="btn-return-top btn-floating waves-effect green" title="回到顶部"><i class="fa fa-arrow-circle-o-up"></i></a></li>
+      <li><a class="btn-floating waves-effect button-collapse yellow darken-1" data-activates="main-menu" title="菜单"><i class="fa fa-navicon"></i></a></li>
+    </ul>
+  </div>
+
+    </main>
+    <footer class="page-footer indigo darken-1">
+    
+    <div class="footer-container container">
+        <div class="row">
+            
+            <div class="social-group col m4 s12">
+                <h5 class="white-text">社交</h5>
+                
+                    <a class="social-link" href="https://www.weibo.com/3854297228" target="_blank">
+                        <i class="fa fa-2x fa-weibo"></i>
+                    </a>
+                
+                    <a class="social-link" href="https://github.com/thinkerwolf" target="_blank">
+                        <i class="fa fa-2x fa-github"></i>
+                    </a>
+                
+                    <a class="social-link" href="/atom.xml" target="_blank">
+                        <i class="fa fa-2x fa-rss"></i>
+                    </a>
+                
+                
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+    <div class="site-visitors-container white-text">
+        <span>
+            <i class="fa fa-user"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+        </span>
+        <span>&nbsp;|&nbsp;</span>
+        <span>
+            <i class="fa fa-eye"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+
+
+            </div>
+            
+
+            
+            <div class="col m8 s12">
+                <h5 class="white-text">友情链接</h5>
+                
+                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">raytaylorism主题</a>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <div class="footer-copyright pink-link-context">
+        <div class="container">
+            © 2019 thinkerwolf.github.io, All rights reserved.
+            <p class="right" style="margin-top: 0;">本博客由 <a href="https://hexo.io">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/raytaylorlin/hexo-theme-raytaylorism">raytaylorism</a></p>
+        </div>
+    </div>
+</footer>
+
+
+    <noscript>
+    <div class="noscript">
+        <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+    </div>
+</noscript>
+<div class="noscript">
+    <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+</div>
+
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/materialize.min.js"></script>
+
+<script>
+    (function($) {
+        $(document).ready(function() {
+            // 隐藏禁用javascript（针对微信内置浏览器）的提示
+            $('.noscript').hide();
+
+            // 图片缩放效果
+            var $imgs = $('img').not('.slider-image').not('.avatar-image').not('.carousel-image').not('.card-cover-image').not('.qrcode');
+
+            // 给图片加上点击放大效果（materialbox插件）
+            $imgs.addClass('materialboxed').each(function(i, el) {
+                $(this).attr('data-caption', $(this).attr('alt') || ' ');
+            }).materialbox();
+
+            // 优化表格的显示
+            $('table').each(function() {
+                var $table = $(this);
+                // 除去多行代码的情况
+                if ($table.find('pre').length == 0) {
+                    $table.addClass('responsive-table striped bordered');
+                }
+            });
+
+            // 首页幻灯片
+            $('.slider').slider({indicators: true, full_width: true, interval: 8000});
+
+            $(".button-collapse").sideNav();
+            $(".category-menu").sideNav();
+
+            // 针对gallery post
+            $('.carousel').carousel({full_width: true});
+            $('.carousel-control.prev').click(function() {
+                $('.carousel').carousel('prev');
+            });
+            $('.carousel-control.next').click(function() {
+                $('.carousel').carousel('next');
+            });
+
+            // 文章目录
+            $('article').not('.simple-article').find('h1').add('h2').add('h3').add('h4').add('h5').add('h6').scrollSpy();
+
+            // 目录随屏幕滚动（防止目录过长越过footer）
+            var $toc = $('.toc');
+            var scrollTargetTop = 0;
+            $(window).scroll(function() {
+                var $activeLink = $toc.find('a.active.section');
+                if ($(window).scrollTop() < 100) {
+                    scrollTargetTop = 0;
+                } else {
+                    if ($activeLink[0]) {
+                        scrollTargetTop = $activeLink.offset().top - $toc.offset().top;
+                    }
+                }
+                $toc.css('top', '-' + scrollTargetTop + 'px');
+            });
+
+            // 修正文章目录的left-border颜色
+            var color = $('.table-of-contents-text').css('color');
+            $('.table-of-contents-link').css('border-left-color', color);
+
+            // 针对移动端做的优化：FAB按钮点击一下收回
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                $('.fixed-action-btn').addClass('click-to-toggle');
+            }
+            // 回到顶部
+            $('.btn-return-top').click(function() {
+                $('body, html').animate({
+                    scrollTop: 0
+                }, 500);
+            });
+
+            // 重置读书页面的Tab标签页的颜色
+            $('li.tab a').hover(function() {
+                $(this).toggleClass('text-lighten-4');
+            });
+            $('.indicator').addClass('pink lighten-2');
+
+            
+            // 添加new标签
+            $('.menu-reading, .menu-about').append('<span class="new badge pink"></span>');
+            
+
+            // 搜索功能
+            $('.modal-trigger').leanModal({
+                // 打开搜索框时自动聚焦
+                ready: function() {
+                    if ($('#search').is(":visible")) {
+                        $('#search-input').focus();
+                    }
+                }
+            });
+            var searchXml = "";
+            if (searchXml.length == 0) {
+             	searchXml = "search.xml";
+            }
+            var searchPath = "/" + searchXml;
+            initSearch(searchPath, 'search-input', 'search-result');
+        });
+
+        // 初始化搜索与匹配函数
+        var initSearch = function(path, search_id, content_id) {
+            'use strict';
+            $.ajax({
+                url: path,
+                dataType: "xml",
+                success: function(xmlResponse) {
+                    // get the contents from search data
+                    var datas = $("entry", xmlResponse).map(function() {
+                        return {
+                            title: $("title", this).text(),
+                            content: $("content", this).text(),
+                            url: $("url", this).text()
+                        };
+                    }).get();
+                    var $input = document.getElementById(search_id);
+                    var $resultContent = document.getElementById(content_id);
+                    $input.addEventListener('input', function() {
+                        var str = '<ul class=\"search-result-list\">';
+                        var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                        $resultContent.innerHTML = "";
+                        if (this.value.trim().length <= 0) {
+                            return;
+                        }
+                        // perform local searching
+                        datas.forEach(function(data) {
+                            var isMatch = true;
+                            var content_index = [];
+                            var data_title = data.title.trim().toLowerCase();
+                            var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                            var data_url = data.url;
+                            var index_title = -1;
+                            var index_content = -1;
+                            var first_occur = -1;
+                            // only match artiles with not empty titles and contents
+                            if (data_title != '' && data_content != '') {
+                                keywords.forEach(function(keyword, i) {
+                                    index_title = data_title.indexOf(keyword);
+                                    index_content = data_content.indexOf(keyword);
+                                    if (index_title < 0 && index_content < 0) {
+                                        isMatch = false;
+                                    } else {
+                                        if (index_content < 0) {
+                                            index_content = 0;
+                                        }
+                                        if (i == 0) {
+                                            first_occur = index_content;
+                                        }
+                                    }
+                                });
+                            }
+                            // show search results
+                            if (isMatch) {
+                                keywords.forEach(function(keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    data_title = data_title.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                });
+
+                                str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                                var content = data.content.trim().replace(/<[^>]+>/g, "");
+                                if (first_occur >= 0) {
+                                    // cut out 100 characters
+                                    var start = first_occur - 20;
+                                    var end = first_occur + 80;
+                                    if (start < 0) {
+                                        start = 0;
+                                    }
+                                    if (start == 0) {
+                                        end = 100;
+                                    }
+                                    if (end > content.length) {
+                                        end = content.length;
+                                    }
+                                    var match_content = content.substring(start, end);
+                                    // highlight all keywords
+                                    keywords.forEach(function(keyword) {
+                                        var regS = new RegExp(keyword, "gi");
+                                        match_content = match_content.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                    });
+
+                                    str += "<p class=\"search-result\">..." + match_content + "...</p>"
+                                }
+                                str += "</li>";
+                            }
+                        });
+                        str += "</ul>";
+                        $resultContent.innerHTML = str;
+                    });
+                }
+            });
+        }
+    })(jQuery);
+</script>
+
+
+<script src="/js/prettify.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("pre").addClass("prettyprint");
+        prettyPrint();
+    });
+</script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+</body>
+</html>

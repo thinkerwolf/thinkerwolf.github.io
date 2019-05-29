@@ -1,0 +1,807 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    
+
+    <title>MySQL使用SQL管理数据 | One code man</title>
+    <meta name="author" content="wukai">
+    
+    <meta name="description" content="使用SQL管理数据数据表的创建、删除、索引和变更MySQL允许创建、删除数据表或改变其结构，相应的SQL语句分别是CREATE TABLE、DROP TABLE、ALTER TABLE。CREATE INDEX和DROP INDEX语句用来给先用的数据表增加或删除索引。
+存储引擎特征
+
+
+Engin">
+    
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta property="og:title" content="MySQL使用SQL管理数据">
+    <meta property="og:site_name" content="thinkerwolf">
+
+    
+    <meta property="og:image" content>
+    
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="alternate" href="/atom.xml" title="thinkerwolf" type="application/atom+xml">
+    <link rel="stylesheet" href="/css/lib/materialize.min.css">
+    <link rel="stylesheet" href="/css/lib/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+
+    
+        <link rel="stylesheet" href="/css/lib/prettify-tomorrow-night-eighties.css" type="text/css">
+    
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+</head>
+</html>
+
+<body>
+    <img src="/weixin_favicon.png" style="position: absolute; left: -9999px; opacity: 0; filter: alpha(opacity=0);">
+
+    <nav class="indigo">
+    <div class="nav-wrapper">
+        <a href="#" data-activates="main-menu" class="button-collapse">
+            <i class="fa fa-navicon"></i>
+        </a>
+        <div class>
+            <a href="/" class="brand-logo hide-on-med-and-down">thinkerwolf</a>
+            <ul class="right hide-on-med-and-down">
+                
+                    <li>
+                        <a class="menu-home " href="/">
+                            <i class="fa fa-home "></i>
+                            
+                            首页
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-archive " href="/archives">
+                            <i class="fa fa-archive "></i>
+                            
+                            归档
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                            <i class="fa fa-bookmark "></i>
+                            
+                            分类
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-reading " href="/reading">
+                            <i class="fa fa-book "></i>
+                            
+                            读书
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-about " href="/about">
+                            <i class="fa fa-user "></i>
+                            
+                            关于
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-search modal-trigger " href="#search">
+                            <i class="fa fa-search "></i>
+                            
+                            搜索
+                        </a>
+                    </li>
+                
+            </ul>
+            <div>
+    <ul class="side-nav indigo darken-1" id="main-menu">
+        
+        <li class="side-user">
+            <div class="row">
+                <div class="col s4 no-padding">
+                    <img class="avatar-image circle responsive-img" src="/images/avatar.png" alt="User Avatar">
+                </div>
+                <div class="info col s8 valign-wrapper no-padding">
+                    <div class="valign">
+                        <p class="name">吴凯</p>
+                        <p class="desc">Java后端/机器学习/技术宅</p>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-home " href="/">
+                    <i class="fa fa-home "></i>
+                    
+                    首页
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-archive " href="/archives">
+                    <i class="fa fa-archive "></i>
+                    
+                    归档
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                    <i class="fa fa-bookmark "></i>
+                    
+                    分类
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-reading " href="/reading">
+                    <i class="fa fa-book "></i>
+                    
+                    读书
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-about " href="/about">
+                    <i class="fa fa-user "></i>
+                    
+                    关于
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-search modal-trigger " href="#search">
+                    <i class="fa fa-search "></i>
+                    
+                    搜索
+                </a>
+            </li>
+        
+    </ul>
+
+    <ul class="side-nav indigo darken-1" id="category-menu">
+    
+
+            
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Java/">
+                    Java <span class="right">10 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/机器学习/">
+                    机器学习 <span class="right">8 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/linux/">
+                    linux <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/MySQL/">
+                    MySQL <span class="right">4 篇</span></a>
+                
+            </li>
+
+        
+
+    </ul>
+</div>
+
+        </div>
+    </div>
+</nav>
+
+<div id="search" class="modal search-modal">
+    <div class="row">
+        <div class="input-field col s12">
+              <input id="search-input" type="text">
+              <label for="search-input">搜索</label>
+        </div>
+
+    </div>
+    <div id="search-result" class="search-result col s12">
+
+    </div>
+</div>
+
+
+    <main>
+        <div class="container main-container">
+    <nav class="page-nav hide-on-small-only">
+    <div class="nav-wrapper indigo">
+        <span class="breadcrumb">当前位置（分类目录）</span>
+        
+            
+    
+    
+    <a class="breadcrumb" href="/categories/MySQL/">MySQL</a>
+
+
+        
+
+        
+    </div>
+</nav>
+
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>MySQL使用SQL管理数据</h1>
+    
+
+
+            </div>
+            <time class="pink-link-context" datetime="2017-06-01T13:07:54.000Z"><a href="/2017/06/01/mysql-sql/">2017-06-01</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
+        
+            <a href="/tags/MySQL/" class="chip pink lighten-1">MySQL</a>
+        
+            <a href="/tags/数据库/" class="chip pink lighten-1">数据库</a>
+        
+    </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-1"><a class="section table-of-contents-link" href="#使用SQL管理数据"><span class="section table-of-contents-text">使用SQL管理数据</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#数据表的创建、删除、索引和变更"><span class="section table-of-contents-text">数据表的创建、删除、索引和变更</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#存储引擎特征"><span class="section table-of-contents-text">存储引擎特征</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#存储引擎的可移植性"><span class="section table-of-contents-text">存储引擎的可移植性</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#创建数据表"><span class="section table-of-contents-text">创建数据表</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#数据表选项"><span class="section table-of-contents-text">数据表选项</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#临时数据表"><span class="section table-of-contents-text">临时数据表</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#从其他数据表或查询结果创建数据表"><span class="section table-of-contents-text">从其他数据表或查询结果创建数据表</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#使用MERGE数据表"><span class="section table-of-contents-text">使用MERGE数据表</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#使用分区数据表"><span class="section table-of-contents-text">使用分区数据表</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#使用FEDRATED数据表"><span class="section table-of-contents-text">使用FEDRATED数据表</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#为数据表编制索引"><span class="section table-of-contents-text">为数据表编制索引</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#存储引擎的索引特性"><span class="section table-of-contents-text">存储引擎的索引特性</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#创建索引"><span class="section table-of-contents-text">创建索引</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#删除索引"><span class="section table-of-contents-text">删除索引</span></a></li></ol></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#获取数据库元数据"><span class="section table-of-contents-text">获取数据库元数据</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#利用联结操作对多个数据表进行检索"><span class="section table-of-contents-text">利用联结操作对多个数据表进行检索</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#内联结"><span class="section table-of-contents-text">内联结</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#左联结和右联结（外联结）"><span class="section table-of-contents-text">左联结和右联结（外联结）</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#用子查询进行多数据表检索"><span class="section table-of-contents-text">用子查询进行多数据表检索</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#IN和NOT-IN"><span class="section table-of-contents-text">IN和NOT IN</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#ALL、ANY和SOME子查询"><span class="section table-of-contents-text">ALL、ANY和SOME子查询</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#EXISTS和NOT-EXISTS子查询"><span class="section table-of-contents-text">EXISTS和NOT EXISTS子查询</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#与主查询相关的子查询"><span class="section table-of-contents-text">与主查询相关的子查询</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#把子查询改写为联结查询"><span class="section table-of-contents-text">把子查询改写为联结查询</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#改写用来选取匹配值的子查询"><span class="section table-of-contents-text">改写用来选取匹配值的子查询</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#改写用来选取非匹配（确实）值的子查询"><span class="section table-of-contents-text">改写用来选取非匹配（确实）值的子查询</span></a></li></ol></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#用UNION语句进行多数据表检索"><span class="section table-of-contents-text">用UNION语句进行多数据表检索</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#使用视图"><span class="section table-of-contents-text">使用视图</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#涉及多个数据表的删除和更新操作"><span class="section table-of-contents-text">涉及多个数据表的删除和更新操作</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#事务处理"><span class="section table-of-contents-text">事务处理</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#外键和引用完整性"><span class="section table-of-contents-text">外键和引用完整性</span></a></li></ol></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <h1 id="使用SQL管理数据"><a href="#使用SQL管理数据" class="headerlink" title="使用SQL管理数据"></a>使用SQL管理数据</h1><h2 id="数据表的创建、删除、索引和变更"><a href="#数据表的创建、删除、索引和变更" class="headerlink" title="数据表的创建、删除、索引和变更"></a>数据表的创建、删除、索引和变更</h2><p>MySQL允许创建、删除数据表或改变其结构，相应的SQL语句分别是CREATE TABLE、DROP TABLE、ALTER TABLE。CREATE INDEX和DROP INDEX语句用来给先用的数据表增加或删除索引。</p>
+<h3 id="存储引擎特征"><a href="#存储引擎特征" class="headerlink" title="存储引擎特征"></a>存储引擎特征</h3><table>
+<thead>
+<tr>
+<th style="text-align:left">Engine</th>
+<th>Support</th>
+<th style="text-align:left">Commont</th>
+<th style="text-align:right">Transactions</th>
+<th style="text-align:right">XA</th>
+<th style="text-align:right">Savapoints</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">MEMORY</td>
+<td>YES</td>
+<td style="text-align:left">基于Hash，存储在内存中</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+</tr>
+<tr>
+<td style="text-align:left">MRG_MYISAM</td>
+<td>YES</td>
+<td style="text-align:left">同一的MyISAM表集合</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+</tr>
+<tr>
+<td style="text-align:left">CSV</td>
+<td>YES</td>
+<td style="text-align:left">CSV存储引擎</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+</tr>
+<tr>
+<td style="text-align:left">FEDERATED</td>
+<td>NO</td>
+<td style="text-align:left">同盟MySQL存储引擎</td>
+<td style="text-align:right">NULL</td>
+<td style="text-align:right">NULL</td>
+<td style="text-align:right">NULL</td>
+</tr>
+<tr>
+<td style="text-align:left">PERFORMANCE_SCHEMA</td>
+<td>YES</td>
+<td style="text-align:left">表现模式</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+</tr>
+<tr>
+<td style="text-align:left">MyISAM</td>
+<td>YES</td>
+<td style="text-align:left">MyISAM存储引擎</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+</tr>
+<tr>
+<td style="text-align:left">InnoDM</td>
+<td>DEFAULT</td>
+<td style="text-align:left">支持事务、保存点、XA事务</td>
+<td style="text-align:right">YES</td>
+<td style="text-align:right">YES</td>
+<td style="text-align:right">YES</td>
+</tr>
+<tr>
+<td style="text-align:left">BLOCKHOLE</td>
+<td>YES</td>
+<td style="text-align:left">/dev/null存储引擎</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+</tr>
+<tr>
+<td style="text-align:left">ARCHIVE</td>
+<td>YES</td>
+<td style="text-align:left">存档存储引擎</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+<td style="text-align:right">NO</td>
+</tr>
+</tbody>
+</table>
+<h4 id="存储引擎的可移植性"><a href="#存储引擎的可移植性" class="headerlink" title="存储引擎的可移植性"></a>存储引擎的可移植性</h4><p>先用mysqldump工具备份，然后把备份文件梵高另一台服务器主机，并通过加载备份文件重新创建该数据表。可移植性的另一层含义就是 <strong>二进制可移植性</strong>，指的是你可以直接把代表某个数据表的硬盘文件复制到另一台机器，并把它们安装到数据子目录下的地点，那台机器上的MySQL服务器就可以使用该数据表了。</p>
+<h3 id="创建数据表"><a href="#创建数据表" class="headerlink" title="创建数据表"></a>创建数据表</h3><p>CREATE TABLE几种重要的变体，可以灵活地构造数据表。</p>
+<ul>
+<li>改变存储特性数据表选项。</li>
+<li>只在数据表不存在才创建。</li>
+<li>临时数据表，服务器在客户会话结束时自动删除它们。</li>
+<li>从另一个数据表或是从一次SELECT查询的结果来创建数据表。</li>
+<li>使用MERGE数据表、分区数据表、FEDERATED数据表<h4 id="数据表选项"><a href="#数据表选项" class="headerlink" title="数据表选项"></a>数据表选项</h4>CREATE TABLE mytbl (…) ENGINE = MEMORY;<br>CREATE TABLE mytbl (…) ENGINE = InnoDB;</li>
+</ul>
+<p>服务器使用默认的存储引擎来创建数据表。内建的默认存储引擎时MyISAM，你可以通过–default-storage-engine选项来启动服务器。</p>
+<h4 id="临时数据表"><a href="#临时数据表" class="headerlink" title="临时数据表"></a>临时数据表</h4><p>CREATE TEMPORARY TABLE tbl_name … ;</p>
+<h4 id="从其他数据表或查询结果创建数据表"><a href="#从其他数据表或查询结果创建数据表" class="headerlink" title="从其他数据表或查询结果创建数据表"></a>从其他数据表或查询结果创建数据表</h4><p>MYSQL提供了两条语句帮助我们从其他的数据表或是从查询结果创建新的数据表。</p>
+<ul>
+<li>CREATE TABLE … LIKE 语句将创建一个新的数据表作为原始数据表的一份空白副本。他将原始数据表的结构丝毫不差赋值过来，包括索引。不够新数据表内容一片空白，需要再使用一条语句(INSERT INTO … SELECT )</li>
+<li>CREATE TABLE … SELECT语句可以从任意一条SELECT语句的查询结果创建新数据表。<strong>默认情况这条语句不会赋值所有数据列属性</strong>，比如AUTO_INCREMENT，也不会赋值索引，因为结果集本身不带索引。</li>
+</ul>
+<p>方式1Example<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">create table if not exists blog1 like blog;</span><br><span class="line">insert into blog1 select * from blog;</span><br><span class="line">select * from blog1;</span><br></pre></td></tr></table></figure></p>
+<p>方式2Example</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">create table if not exists blog_scores select a.*, b.Score from blog a, scores b;</span><br><span class="line">select * from blog_scores;</span><br></pre></td></tr></table></figure>
+<h4 id="使用MERGE数据表"><a href="#使用MERGE数据表" class="headerlink" title="使用MERGE数据表"></a>使用MERGE数据表</h4><p>MERGE存储引擎是把一组MyISAM数据表当作一个逻辑单元来对待，让我们可以同时对它们进行查询，构成一个MERGE数据表的各成员MyISAM数据表必须有完全一样的结构。</p>
+<p>假设几个日志数据表，内容是几年来每一年的日志记录，定义如下CC代表世纪，YY代表年份。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE log_CCYY</span><br><span class="line">(</span><br><span class="line">    dt DATATIME NOT NULL,</span><br><span class="line">    info VARCHAR(100) NOT NULL,</span><br><span class="line">    INDEX(dt)</span><br><span class="line">) ENGINE = MyISAM;</span><br></pre></td></tr></table></figure></p>
+<p>假设日志数据的集合包括log_2004、log_2005、log_2006，而创建一个如下MERGE数据表把他们归拢成一个逻辑单元：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE log_merge </span><br><span class="line">(</span><br><span class="line">    dt DATATIME NOT NULL,</span><br><span class="line">    info VARCHAR(100) NOT NULL,</span><br><span class="line">    INDEX(dt)</span><br><span class="line">) ENGINE = MERGE UNION = (log_2004, log_2005, log_2006);</span><br></pre></td></tr></table></figure>
+<h4 id="使用分区数据表"><a href="#使用分区数据表" class="headerlink" title="使用分区数据表"></a>使用分区数据表</h4><p>MySQL5.1以上支持分区数据表（partitioned table）。分区在概念上与MERGE存储引擎很相似：他们都可以用来访问被分别存储在不同地点的多个数据表的内容。这两者的区别是：每个分区数据表都是一个货真价实的数据表，而不是一个用来累出各成员数据表的逻辑结构。此外，分区数据表可以使用MyISAM以外的存储引擎，而MERGE只能用MyISAM数据表构成。分区数据表有以下优点。</p>
+<ul>
+<li>数据表的分区可以分布在多个设备上。</li>
+<li>优化器可以把检索操作限定在莫尔格特定的分区还是同时搜索多个分区。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE ... PARTITION BY &#123;分区函数&#125;...</span><br></pre></td></tr></table></figure>
+<p>分区函数把新数据分配到不同分区的依据可以是取值单位、值的列表或散列值。</p>
+<ul>
+<li>依据取值范围分区，数据行包含的值可以划分为一系列互不冲突的区间，比如日期、收入水平、重量等。</li>
+<li>根据列表进行分区。每个分区对应一个明确的值的列表，比如邮政码、电话区号、身份证地区编号。</li>
+<li>根据散列值分区，根据数据行的键字计算出一个散列值，再根据这个散列值把数据分区到各分区，可以自定义散列函数，或者MySQL的内建散列函数。</li>
+</ul>
+<p>分区表Example，根据年份把数据行分配到一个给定的分区：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE log_partition </span><br><span class="line">(</span><br><span class="line">    dt DATATIME NOT NULL,</span><br><span class="line">    info VARCHAR(100) NOT NULL,</span><br><span class="line">    INDEX(dt)</span><br><span class="line">)</span><br><span class="line">PARTITION BY RANGE(YEAR(dt)) </span><br><span class="line">(</span><br><span class="line">    PARTITION p0 VALUES LESS THAN (2005),</span><br><span class="line">    PARTITION p1 VALUES LESS THAN (2006),</span><br><span class="line">    PARTITION p2 VALUES LESS THAN (2007),</span><br><span class="line">    PARTITION p3 VALUES LESS THAN (2008),</span><br><span class="line">    PARTITION p4 VALUES LESS THAN MAXVALUE</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>2009年时看可以对这个分区再进行划分，把2008年记录日志转移到自己分区，把2009年后的日志记录到MAXVALUE分区。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE log_partition REORGANIZE PARTITION p4</span><br><span class="line">INTO (</span><br><span class="line">    PARTITION p4 VALUES LESS THAN (2009),</span><br><span class="line">    PARTITION p5 VALUES LESS THAN (MAXVALUE)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>默认情况下，分区被保存在分区数据表所属于的数据库的子目录里。如果想存储分配到其他位置（如另一个物理设备），需要使用DATA_DIRECTORY和INDEX_DIRECTORY分区选项。</p>
+<h4 id="使用FEDRATED数据表"><a href="#使用FEDRATED数据表" class="headerlink" title="使用FEDRATED数据表"></a>使用FEDRATED数据表</h4><p>FEDERATED存储引擎可以让你访问其他主机上另一个MySQL服务器实际管理的数据表。</p>
+<h3 id="为数据表编制索引"><a href="#为数据表编制索引" class="headerlink" title="为数据表编制索引"></a>为数据表编制索引</h3><h4 id="存储引擎的索引特性"><a href="#存储引擎的索引特性" class="headerlink" title="存储引擎的索引特性"></a>存储引擎的索引特性</h4><ul>
+<li>为单个列编制索引，也可以为多个列构造复合索引。</li>
+<li>索引可以包含独一无二或者重复的值。</li>
+<li>为同一个表创建多个索引优化不同查询。</li>
+<li>对于ENUM和SET以外的字符串类型数据，可以只为数据列的一个前缀创建索引，对坐标n个字符创建索引。(对于BLOB和TEXT数据列，必须指定前缀才能创建索引。)<strong>为数据列前缀而不是整个数据列可以让索引本身更小加快访问速度</strong>。</li>
+</ul>
+<h4 id="创建索引"><a href="#创建索引" class="headerlink" title="创建索引"></a>创建索引</h4><ul>
+<li>UNIQUE唯一索引。索引项不允许出现重复值，复合索引数据项组合不允许重复。</li>
+<li>INDEX普通索引。允许出现重复值。</li>
+<li>FULLTEXT索引。只适用MyISAM数据表。</li>
+<li>SPATIAL。只适用MyISAM数据表。</li>
+<li>HASH。MEMORY数据表默认索引类型。可以改用BTREE索引代替。</li>
+</ul>
+<p>ALTER TABLE比CREATE TABLE语句更灵活多能。比如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE tbl_name ADD INDEX index_name (index_columns);</span><br><span class="line">ALTER TABLE tbl_name ADD UNIQUE index_name (index_columns);</span><br><span class="line">ALTER TABLE tbl_name ADD PRIPARY KEY (index_columns);</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE mytbl </span><br><span class="line">(</span><br><span class="line">   ... column definitions ...</span><br><span class="line">   INDEX index_name (index_columns),</span><br><span class="line">   UNIQUE index_name (index_columns),</span><br><span class="line">   PRIPARY KEY (index_columns),</span><br><span class="line">   ....</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE mytbl </span><br><span class="line">(</span><br><span class="line">   id int(11) NOT NULL PRIPARY KEY,</span><br><span class="line">   name varchar(100) NOT NULL UNIQUE,</span><br><span class="line">   ....</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>等价与<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE mytbl </span><br><span class="line">(</span><br><span class="line">   id int(11) NOT NULL,</span><br><span class="line">   name varchar(100) NOT NULL,</span><br><span class="line">   PRIMARY KEY (id),</span><br><span class="line">   UNIQUE (name),</span><br><span class="line">   ....</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<h4 id="删除索引"><a href="#删除索引" class="headerlink" title="删除索引"></a>删除索引</h4><p>可以使用DROP INDEX或ALTER TABLE完成。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE tbl_name DROP INDEX index_name;</span><br><span class="line">ALTER TABLE tbl_name DROP PRIMARY KEY;</span><br></pre></td></tr></table></figure>
+<h2 id="获取数据库元数据"><a href="#获取数据库元数据" class="headerlink" title="获取数据库元数据"></a>获取数据库元数据</h2><h2 id="利用联结操作对多个数据表进行检索"><a href="#利用联结操作对多个数据表进行检索" class="headerlink" title="利用联结操作对多个数据表进行检索"></a>利用联结操作对多个数据表进行检索</h2><h3 id="内联结"><a href="#内联结" class="headerlink" title="内联结"></a>内联结</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT ... FROM t1 INNER JOIN t2 WHERE t1.i1 = t2.i2;</span><br></pre></td></tr></table></figure>
+<p>根据某个数据表的每一个数据行与另一个数据表里的每一个数据行得到全部可能的组合的联结操作叫做生成 <strong>笛卡尔积</strong>。这样联结数据表会产生很多结果数据行。</p>
+<ul>
+<li>可以用ON子句代替WHERE子句，不管被联结的数据列是否同名，ON子句都可以使用。<br>SELECT … FROM t1 INNER JOIN t2 ON t1.i1 = t2.i2;</li>
+<li>另一个语法时使用USING()子句，概念上类似与ON子句，但要求被联结的数据列必须同名。<br>SELECT mytbl1.*, mytbl2.* from mytbl1 INNER JOIN mytbl2 USING(b);</li>
+</ul>
+<h3 id="左联结和右联结（外联结）"><a href="#左联结和右联结（外联结）" class="headerlink" title="左联结和右联结（外联结）"></a>左联结和右联结（外联结）</h3><p>内联结只显示在两个数据表里都能找到匹配的数据行。外联结除了显示同样的匹配结果，还可以把其中一个数据表在另一个数据表没有匹配的数据行也显示出来。LEFT JOIN把左数据表在右数据表没有匹配的数据行也显示出来。RIGHT JOIN刚好相反。外联结非常适合解决“哪些值事故缺失的”这个问题。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from blog b LEFT JOIN scores s ON b.id = s.Id;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from blog b LEFT JOIN scores s WHERE b.id = s.Id;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在进行左联结或者右联结使用WHERE进行两表联结会产生语法错误</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">SELECT </span><br><span class="line">    *</span><br><span class="line">FROM </span><br><span class="line">    student s INNER JOIN grade_event g </span><br><span class="line">    LEFT JOIN socre s ON s.student_id = g.student_id </span><br><span class="line">                        and g.event_id = s.event_id</span><br><span class="line">WHERE s.socre IS NULL</span><br><span class="line">ORDER BY s.student_id, g.event_id;</span><br></pre></td></tr></table></figure>
+<h2 id="用子查询进行多数据表检索"><a href="#用子查询进行多数据表检索" class="headerlink" title="用子查询进行多数据表检索"></a>用子查询进行多数据表检索</h2><p>子查询的结果可以用以下不同的办法进行测试。</p>
+<ul>
+<li>标量子查询的结果可以用“=”或“&lt;”之类的比较操作求值。</li>
+<li>可以用In和NOT IN操作符来测试某给定的值是否包含在子查询的结果集里。</li>
+<li>可以用ALL、ANY和SOME操作符把某给定值与子查询的结果集进行比较。</li>
+<li>可以用EXISTS和NOT EXISTS操作符来测试子查询的结果集是否为空。</li>
+</ul>
+<h3 id="IN和NOT-IN"><a href="#IN和NOT-IN" class="headerlink" title="IN和NOT IN"></a>IN和NOT IN</h3><p>如果子查询返回多个数据行，可以用IN和NOT IN操作符来构造主查询的检索条件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT last_name, first_name, city, state FROM president </span><br><span class="line">WHERE (city, state) IN</span><br><span class="line">(SELECT city, state FROM president </span><br><span class="line"> WHERE last_name = &apos;Roosevelt&apos;);</span><br></pre></td></tr></table></figure>
+<h3 id="ALL、ANY和SOME子查询"><a href="#ALL、ANY和SOME子查询" class="headerlink" title="ALL、ANY和SOME子查询"></a>ALL、ANY和SOME子查询</h3><p>ALL和ANY操作符的常见用法是结合一个相对比较操作符对一个数据列子查询的结果进行测试。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT last_name, first_name, birth FROM president</span><br><span class="line">WHERE birth &lt;= ANY (SELECT birth FROM president);</span><br></pre></td></tr></table></figure>
+<p>当ALL、ANY或SOME操作符与“=”操作符配合使用，子查询可以是一个数据表子查询。此时，你需要使用一个数据行构造器来提供与子查询返回的数据进行比较的比较值。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT last_name, first_name, city, state FROM president</span><br><span class="line">WHERE (city, state) = ANY </span><br><span class="line">(SELECT city, state FROM president </span><br><span class="line">WHERE last_name = &apos;Roosevelt&apos;);</span><br></pre></td></tr></table></figure></p>
+<p>IN和NOT IN操作符是=ANY和&lt;&gt;ALL的简写。IN的含义“等于子查询所返回的某个数据行”，NOT IN是“不等于子查询返回的所有数据行”。</p>
+<h3 id="EXISTS和NOT-EXISTS子查询"><a href="#EXISTS和NOT-EXISTS子查询" class="headerlink" title="EXISTS和NOT EXISTS子查询"></a>EXISTS和NOT EXISTS子查询</h3><p>这两个操作符只测试某个子查询是否返回了数据行。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT EXISTS (SELECT * FROM absence);</span><br><span class="line">SELECT NOT EXISTS (SELECT * FROM absence);</span><br></pre></td></tr></table></figure></p>
+<h3 id="与主查询相关的子查询"><a href="#与主查询相关的子查询" class="headerlink" title="与主查询相关的子查询"></a>与主查询相关的子查询</h3><p>子查询可以与主查询相关，也可以与之无关。</p>
+<ul>
+<li>与主查询无关的子查询不引用主查询的任何值。</li>
+<li>与主查询相关的子查询需要引用主查询里的值，所以必须依赖主查询。</li>
+</ul>
+<h3 id="把子查询改写为联结查询"><a href="#把子查询改写为联结查询" class="headerlink" title="把子查询改写为联结查询"></a>把子查询改写为联结查询</h3><p>有时候，联结查询比子查询执行效率高。如果一条使用了子查询的SELECT语句需要执行很长时间，就应该尝试把它改写成一个联结查询，看它是不是执行得更好。</p>
+<h4 id="改写用来选取匹配值的子查询"><a href="#改写用来选取匹配值的子查询" class="headerlink" title="改写用来选取匹配值的子查询"></a>改写用来选取匹配值的子查询</h4><p>下面例子从score数据表把考试（不包含小测验）成绩筛选出来：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM score WHERE event_id IN (SELECT event_id FROM grade_event WHERE category=&apos;T&apos;);</span><br></pre></td></tr></table></figure></p>
+<p>可以改写成<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT s.* FROM score s INNER JOIN grade_vent g ON s.event_id = g.event_id WHERE g.category = &apos;T&apos;;</span><br></pre></td></tr></table></figure></p>
+<h4 id="改写用来选取非匹配（确实）值的子查询"><a href="#改写用来选取非匹配（确实）值的子查询" class="headerlink" title="改写用来选取非匹配（确实）值的子查询"></a>改写用来选取非匹配（确实）值的子查询</h4><p>子查询语句的另一种常见的用法是检索一个数据表有，另一个数据表没有的值。与“哪些没有出现”的有关问题可以用LEFT JOIN来解决。</p>
+<p>下面例子是查询没有出现在absence表的学生：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM student WHERE student_id NOT IN (select student_id FROM absence);</span><br></pre></td></tr></table></figure></p>
+<p>可以改写成<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT s.* FROM student LEFT JOIN absence a ON s.student_id = a.student_id WHERE a.student_id IS NULL;</span><br></pre></td></tr></table></figure></p>
+<h2 id="用UNION语句进行多数据表检索"><a href="#用UNION语句进行多数据表检索" class="headerlink" title="用UNION语句进行多数据表检索"></a>用UNION语句进行多数据表检索</h2><p>UNION语句有以下特性。</p>
+<p><strong>数据列的名字和数据类型</strong>。UNION结果集里的数据列名字来自第一个SELECT语句里的数据列的名字。UNION中第二个和后面必须选取个数相同的数据列，但各个有段数据列不必有相同的名字和数据类型。MySQL会自动进行类型转换。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">select task_id, intro from task UNION select user_id, create_time from blog;</span><br><span class="line"></span><br><span class="line">+---------+---------------------+</span><br><span class="line">| task_id | intro               |</span><br><span class="line">+---------+---------------------+</span><br><span class="line">| 2321    | 击毙本拉登          |</span><br><span class="line">| 21      | 2018-12-28 10:23:39 |</span><br><span class="line">| 42      | 2019-03-18 11:25:00 |</span><br><span class="line">+---------+---------------------+</span><br></pre></td></tr></table></figure></p>
+<p>重复数据行的处理。在默认的情况下，UNION将从结果集剔除重复的数据行。如果像保留重复的数据行，需要把每个UNION都改为UNION ALL。<strong>如果把UNION和UNION ALL混杂使用，每个UNION优先于左边任何UNION ALL操作</strong>。</p>
+<p><strong>ORDER BY和LIMIT处理。</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select task_id, intro from task UNION select user_id, create_time from blog ORDER BY intro LIMIT 1;</span><br></pre></td></tr></table></figure>
+<h2 id="使用视图"><a href="#使用视图" class="headerlink" title="使用视图"></a>使用视图</h2><p>视图是一种虚拟的数据表，它们的行为和数据表一样，并不真正包含数据。它们是永底层（真正的）数据表或其他视图定义出来的“假”数据表，用来提供查看数据表数据的另一种方法，可以简化应用程序。</p>
+<h2 id="涉及多个数据表的删除和更新操作"><a href="#涉及多个数据表的删除和更新操作" class="headerlink" title="涉及多个数据表的删除和更新操作"></a>涉及多个数据表的删除和更新操作</h2><p>可以根据某个数据表里数据是否在另一个数据表里有匹配来删除它们。联结概念在用来完成这些操作的语句扮演十分重要的角色。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DELETE FROM t1 LEFT JOIN t2 ON t1.id = t2.id WHERE intro IS NULL;</span><br><span class="line">DELETE FROM t1 INNER JOIN t2 ON t1.id = t2.id;</span><br></pre></td></tr></table></figure></p>
+<h2 id="事务处理"><a href="#事务处理" class="headerlink" title="事务处理"></a>事务处理</h2><h2 id="外键和引用完整性"><a href="#外键和引用完整性" class="headerlink" title="外键和引用完整性"></a>外键和引用完整性</h2>
+                
+<p class="pink-link-context">
+    <a href="/2017/06/01/mysql-storage-program/" rel="next" title="MySQL存储程序">
+    上一篇：MySQL存储程序
+  </a>
+</p>
+
+
+
+<p class="pink-link-context">
+    <a href="/2017/06/01/mysql-query-optimize/" rel="next" title="MySQL查询优化">
+    下一篇：MySQL查询优化
+  </a>
+</p>
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+</div>
+
+        <div class="fixed-action-btn float-sitemap">
+    <a class="btn-floating btn-large pink">
+      <i class="fa fa-caret-square-o-up"></i>
+    </a>
+    <ul>
+      <li><a class="btn-return-top btn-floating waves-effect green" title="回到顶部"><i class="fa fa-arrow-circle-o-up"></i></a></li>
+      <li><a class="btn-floating waves-effect button-collapse yellow darken-1" data-activates="main-menu" title="菜单"><i class="fa fa-navicon"></i></a></li>
+    </ul>
+  </div>
+
+    </main>
+    <footer class="page-footer indigo darken-1">
+    
+    <div class="footer-container container">
+        <div class="row">
+            
+            <div class="social-group col m4 s12">
+                <h5 class="white-text">社交</h5>
+                
+                    <a class="social-link" href="https://www.weibo.com/3854297228" target="_blank">
+                        <i class="fa fa-2x fa-weibo"></i>
+                    </a>
+                
+                    <a class="social-link" href="https://github.com/thinkerwolf" target="_blank">
+                        <i class="fa fa-2x fa-github"></i>
+                    </a>
+                
+                    <a class="social-link" href="/atom.xml" target="_blank">
+                        <i class="fa fa-2x fa-rss"></i>
+                    </a>
+                
+                
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+    <div class="site-visitors-container white-text">
+        <span>
+            <i class="fa fa-user"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+        </span>
+        <span>&nbsp;|&nbsp;</span>
+        <span>
+            <i class="fa fa-eye"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+
+
+            </div>
+            
+
+            
+            <div class="col m8 s12">
+                <h5 class="white-text">友情链接</h5>
+                
+                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">raytaylorism主题</a>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <div class="footer-copyright pink-link-context">
+        <div class="container">
+            © 2019 thinkerwolf.github.io, All rights reserved.
+            <p class="right" style="margin-top: 0;">本博客由 <a href="https://hexo.io">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/raytaylorlin/hexo-theme-raytaylorism">raytaylorism</a></p>
+        </div>
+    </div>
+</footer>
+
+
+    <noscript>
+    <div class="noscript">
+        <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+    </div>
+</noscript>
+<div class="noscript">
+    <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+</div>
+
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/materialize.min.js"></script>
+
+<script>
+    (function($) {
+        $(document).ready(function() {
+            // 隐藏禁用javascript（针对微信内置浏览器）的提示
+            $('.noscript').hide();
+
+            // 图片缩放效果
+            var $imgs = $('img').not('.slider-image').not('.avatar-image').not('.carousel-image').not('.card-cover-image').not('.qrcode');
+
+            // 给图片加上点击放大效果（materialbox插件）
+            $imgs.addClass('materialboxed').each(function(i, el) {
+                $(this).attr('data-caption', $(this).attr('alt') || ' ');
+            }).materialbox();
+
+            // 优化表格的显示
+            $('table').each(function() {
+                var $table = $(this);
+                // 除去多行代码的情况
+                if ($table.find('pre').length == 0) {
+                    $table.addClass('responsive-table striped bordered');
+                }
+            });
+
+            // 首页幻灯片
+            $('.slider').slider({indicators: true, full_width: true, interval: 8000});
+
+            $(".button-collapse").sideNav();
+            $(".category-menu").sideNav();
+
+            // 针对gallery post
+            $('.carousel').carousel({full_width: true});
+            $('.carousel-control.prev').click(function() {
+                $('.carousel').carousel('prev');
+            });
+            $('.carousel-control.next').click(function() {
+                $('.carousel').carousel('next');
+            });
+
+            // 文章目录
+            $('article').not('.simple-article').find('h1').add('h2').add('h3').add('h4').add('h5').add('h6').scrollSpy();
+
+            // 目录随屏幕滚动（防止目录过长越过footer）
+            var $toc = $('.toc');
+            var scrollTargetTop = 0;
+            $(window).scroll(function() {
+                var $activeLink = $toc.find('a.active.section');
+                if ($(window).scrollTop() < 100) {
+                    scrollTargetTop = 0;
+                } else {
+                    if ($activeLink[0]) {
+                        scrollTargetTop = $activeLink.offset().top - $toc.offset().top;
+                    }
+                }
+                $toc.css('top', '-' + scrollTargetTop + 'px');
+            });
+
+            // 修正文章目录的left-border颜色
+            var color = $('.table-of-contents-text').css('color');
+            $('.table-of-contents-link').css('border-left-color', color);
+
+            // 针对移动端做的优化：FAB按钮点击一下收回
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                $('.fixed-action-btn').addClass('click-to-toggle');
+            }
+            // 回到顶部
+            $('.btn-return-top').click(function() {
+                $('body, html').animate({
+                    scrollTop: 0
+                }, 500);
+            });
+
+            // 重置读书页面的Tab标签页的颜色
+            $('li.tab a').hover(function() {
+                $(this).toggleClass('text-lighten-4');
+            });
+            $('.indicator').addClass('pink lighten-2');
+
+            
+            // 添加new标签
+            $('.menu-reading, .menu-about').append('<span class="new badge pink"></span>');
+            
+
+            // 搜索功能
+            $('.modal-trigger').leanModal({
+                // 打开搜索框时自动聚焦
+                ready: function() {
+                    if ($('#search').is(":visible")) {
+                        $('#search-input').focus();
+                    }
+                }
+            });
+            var searchXml = "";
+            if (searchXml.length == 0) {
+             	searchXml = "search.xml";
+            }
+            var searchPath = "/" + searchXml;
+            initSearch(searchPath, 'search-input', 'search-result');
+        });
+
+        // 初始化搜索与匹配函数
+        var initSearch = function(path, search_id, content_id) {
+            'use strict';
+            $.ajax({
+                url: path,
+                dataType: "xml",
+                success: function(xmlResponse) {
+                    // get the contents from search data
+                    var datas = $("entry", xmlResponse).map(function() {
+                        return {
+                            title: $("title", this).text(),
+                            content: $("content", this).text(),
+                            url: $("url", this).text()
+                        };
+                    }).get();
+                    var $input = document.getElementById(search_id);
+                    var $resultContent = document.getElementById(content_id);
+                    $input.addEventListener('input', function() {
+                        var str = '<ul class=\"search-result-list\">';
+                        var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                        $resultContent.innerHTML = "";
+                        if (this.value.trim().length <= 0) {
+                            return;
+                        }
+                        // perform local searching
+                        datas.forEach(function(data) {
+                            var isMatch = true;
+                            var content_index = [];
+                            var data_title = data.title.trim().toLowerCase();
+                            var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                            var data_url = data.url;
+                            var index_title = -1;
+                            var index_content = -1;
+                            var first_occur = -1;
+                            // only match artiles with not empty titles and contents
+                            if (data_title != '' && data_content != '') {
+                                keywords.forEach(function(keyword, i) {
+                                    index_title = data_title.indexOf(keyword);
+                                    index_content = data_content.indexOf(keyword);
+                                    if (index_title < 0 && index_content < 0) {
+                                        isMatch = false;
+                                    } else {
+                                        if (index_content < 0) {
+                                            index_content = 0;
+                                        }
+                                        if (i == 0) {
+                                            first_occur = index_content;
+                                        }
+                                    }
+                                });
+                            }
+                            // show search results
+                            if (isMatch) {
+                                keywords.forEach(function(keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    data_title = data_title.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                });
+
+                                str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                                var content = data.content.trim().replace(/<[^>]+>/g, "");
+                                if (first_occur >= 0) {
+                                    // cut out 100 characters
+                                    var start = first_occur - 20;
+                                    var end = first_occur + 80;
+                                    if (start < 0) {
+                                        start = 0;
+                                    }
+                                    if (start == 0) {
+                                        end = 100;
+                                    }
+                                    if (end > content.length) {
+                                        end = content.length;
+                                    }
+                                    var match_content = content.substring(start, end);
+                                    // highlight all keywords
+                                    keywords.forEach(function(keyword) {
+                                        var regS = new RegExp(keyword, "gi");
+                                        match_content = match_content.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                    });
+
+                                    str += "<p class=\"search-result\">..." + match_content + "...</p>"
+                                }
+                                str += "</li>";
+                            }
+                        });
+                        str += "</ul>";
+                        $resultContent.innerHTML = str;
+                    });
+                }
+            });
+        }
+    })(jQuery);
+</script>
+
+
+<script src="/js/prettify.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("pre").addClass("prettyprint");
+        prettyPrint();
+    });
+</script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+</body>
+</html>

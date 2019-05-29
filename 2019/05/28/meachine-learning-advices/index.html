@@ -7,15 +7,20 @@
 
     
 
-    <title>meachine-learning-advices | One code man</title>
+    <title>机器学习建议 | One code man</title>
     <meta name="author" content="wukai">
     
-    <meta name="description" content="MathJax.Hub.Config({    extensions: [“tex2jax.js”],    jax: [“input/TeX”, “output/HTML-CSS”],    tex2jax: {            inlineMath: [ [‘$’,’$’], [“\(“,">
+    <meta name="description" content="MathJax.Hub.Config({
+    extensions: [&#34;tex2jax.js&#34;],
+    jax: [&#34;input/TeX&#34;, &#34;output/HTML-CSS&#34;],
+    tex2jax: {
+      
+      inlineMath: [ [&#39;$&#39;,&#39;$&#39;], [">
     
     
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-    <meta property="og:title" content="meachine-learning-advices">
+    <meta property="og:title" content="机器学习建议">
     <meta property="og:site_name" content="thinkerwolf">
 
     
@@ -194,6 +199,14 @@
 
         
 
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/MySQL/">
+                    MySQL <span class="right">4 篇</span></a>
+                
+            </li>
+
+        
+
     </ul>
 </div>
 
@@ -241,7 +254,7 @@
             <div class="article-title">
                 
     
-        <h1>meachine-learning-advices</h1>
+        <h1>机器学习建议</h1>
     
 
 
@@ -262,12 +275,27 @@
 
 
             <div class="toc pink-link-context hide-on-med-and-down">
-    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#决定下一步做什么"><span class="section table-of-contents-text">决定下一步做什么</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#调试学习算法"><span class="section table-of-contents-text">调试学习算法</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#机器学习诊断"><span class="section table-of-contents-text">机器学习诊断</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#评估预测"><span class="section table-of-contents-text">评估预测</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#测试集合误差（代价）"><span class="section table-of-contents-text">测试集合误差（代价）</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#线性回归"><span class="section table-of-contents-text">线性回归</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#分类误差"><span class="section table-of-contents-text">分类误差</span></a></li></ol></li></ol></li></ol>
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#决定下一步做什么"><span class="section table-of-contents-text">决定下一步做什么</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#调试学习算法"><span class="section table-of-contents-text">调试学习算法</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#机器学习诊断"><span class="section table-of-contents-text">机器学习诊断</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#评估预测"><span class="section table-of-contents-text">评估预测</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#测试集合误差（代价）"><span class="section table-of-contents-text">测试集合误差（代价）</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#线性回归"><span class="section table-of-contents-text">线性回归</span></a></li><li class="section table-of-contents-item section table-of-contents-level-4"><a class="section table-of-contents-link" href="#分类误差"><span class="section table-of-contents-text">分类误差</span></a></li></ol></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#模型选择和训练-验证-测试集合"><span class="section table-of-contents-text">模型选择和训练/验证/测试集合</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#诊断偏差-方差"><span class="section table-of-contents-text">诊断偏差/方差</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#正则化和偏差-方差"><span class="section table-of-contents-text">正则化和偏差/方差</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#学习曲线"><span class="section table-of-contents-text">学习曲线</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#高偏差情况"><span class="section table-of-contents-text">高偏差情况</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#高方差情况"><span class="section table-of-contents-text">高方差情况</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#决定下一步做什么（总结）"><span class="section table-of-contents-text">决定下一步做什么（总结）</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#诊断神经网络"><span class="section table-of-contents-text">诊断神经网络</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#模型复杂度影响"><span class="section table-of-contents-text">模型复杂度影响</span></a></li></ol></li></ol>
 </div>
 
 
             <div class="entry pink-link-context">
-                <p><script type="text/x-mathjax-config"><br>  MathJax.Hub.Config({<br>    extensions: [“tex2jax.js”],<br>    jax: [“input/TeX”, “output/HTML-CSS”],<br>    tex2jax: {<br>      <!--$表示行内元素，$$表示块状元素 --><br>      inlineMath: [ [‘$’,’$’], [“\(“,”\)”] ],<br>      displayMath: [ [‘$$’,’$$’], [“\[“,”\]”] ],<br>      processEscapes: true<br>    },<br>    “HTML-CSS”: { availableFonts: [“TeX”] }<br>  });<br></script></p>
+                <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      <!--$表示行内元素，$$表示块状元素 -->
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js">
+</script>
+
 <h2 id="决定下一步做什么"><a href="#决定下一步做什么" class="headerlink" title="决定下一步做什么"></a>决定下一步做什么</h2><h3 id="调试学习算法"><a href="#调试学习算法" class="headerlink" title="调试学习算法"></a>调试学习算法</h3><p>假设你已经实现了正则化的线性回归算法来预测房价。</p>
 <p>但是，当你用一组新的数据测试预测函数时，你发现其预测会有很大的误差，下一步该怎么做。</p>
 <ul>
@@ -290,6 +318,71 @@
 <h3 id="测试集合误差（代价）"><a href="#测试集合误差（代价）" class="headerlink" title="测试集合误差（代价）"></a>测试集合误差（代价）</h3><h4 id="线性回归"><a href="#线性回归" class="headerlink" title="线性回归"></a>线性回归</h4><p>$$<br>J_{test}(\Theta)=\frac{1}{2m_{test}}\sum_{i=1}^{m_{test}}{(h_\Theta(x_{test}^{(i)})-y_{test}^{(i)})^2}<br>$$</p>
 <h4 id="分类误差"><a href="#分类误差" class="headerlink" title="分类误差"></a>分类误差</h4><p>$$<br>err(h_\Theta(x),y)=1/0 \qquad if \; h_\Theta(x)\ge0.5 \,and \,y=0 \quad if \; h_\Theta(x)&lt;0.5\,and\,y=1<br>$$</p>
 <p>这个给了我们基于一个误分类二进制0或1误差结果。测试集合的测试误差的平均值为：<br>$$<br>error=\frac{1}{m_{test}}\sum_{i=1}^{m_{test}}{err(h_\Theta(x_{test}^{(i)}),y_{test}^{(i)})}<br>$$</p>
+<h2 id="模型选择和训练-验证-测试集合"><a href="#模型选择和训练-验证-测试集合" class="headerlink" title="模型选择和训练/验证/测试集合"></a>模型选择和训练/验证/测试集合</h2><p>一个学习算法与训练几个拟合地很好，并不代表它是个好的预测。它可能过拟合导致对测试集合的预测效果可能会非常差。训练数据集合在预测上的测量误差更小于在其他数据集上的误差更小。</p>
+<p>给定多个多项式模型，我们可以使用一个系统的方式来定位最好的函数。为了选择预测的模型，你可以测试每个多项式等级来看看误差结果。</p>
+<p>一种方式是将数据集分成三个部分：</p>
+<ul>
+<li>训练集合train：60%</li>
+<li>交叉验证集合cv：20%</li>
+<li>测试集合：20%</li>
+</ul>
+<p>现在我们可以用不同的集合计算出不同的误差值：</p>
+<ol>
+<li>每个等级的多项式采用<strong>训练集合</strong>优化$\Theta$参数。</li>
+<li>使用交<strong>叉验证集合</strong>寻找最小误差多项式等级d。</li>
+<li>使用<strong>测试集合</strong>评估泛化误差。$J_{test}(\Theta^{(d)})$。</li>
+</ol>
+<h2 id="诊断偏差-方差"><a href="#诊断偏差-方差" class="headerlink" title="诊断偏差/方差"></a>诊断偏差/方差</h2><p>这个章节我们测试多项式等级d和欠拟合或过拟合的关系。</p>
+<ul>
+<li>我们得区分是偏差还是方差问题导致了差的预测效果。</li>
+<li>高偏差是欠拟合，高方差是过拟合。我们需要在这两者之间找到适当的值。</li>
+</ul>
+<p>训练误差会区域降低因为我们增加多项式等级。</p>
+<p>同时，交叉验证误差将降低当我们将等级d增加到某个点，然后它会增加随着等级d的增加，形成一个凸的曲线。</p>
+<p><strong>高偏差（欠拟合）</strong>：$J_{train}(\Theta)$和$J_{CV}(\Theta)$都会很高，$J_{train}(\Theta)/approxJ_{CV}(\Theta)$。</p>
+<p><strong>高方差(过拟合)</strong>：$J_{train}(\Theta)$会低，$J_{CV}(\Theta)$会远比$J_{train}(\Theta)$大。</p>
+<p><img src="/images/machine/ml1.png" alt></p>
+<h2 id="正则化和偏差-方差"><a href="#正则化和偏差-方差" class="headerlink" title="正则化和偏差/方差"></a>正则化和偏差/方差</h2><p><img src="/images/machine/ml2.png" alt></p>
+<p>从上面的图看出，当$\lambda$增加，我们的拟合变得更加坚平。从另一方面，随着$\lambda$逼近0，我们趋向过拟合。为了选择模型和正则化参数$\lambda$，需要以下步骤：</p>
+<ol>
+<li>创建lambda列表($\lambda\in\{0,0.01,0.02,0.04,0.08,0.16,0.32,0.64,1.28,2.56,5.12,10.24\}$)</li>
+<li>创建一系列不同等级或变体的模型。</li>
+<li>遍历$\lambda$s并且针对每个$\lambda$检查所有模型来学习$\Theta$。</li>
+<li>在$J_{CV}(\Theta)$使用学习的$\Theta$计算交叉验证误差，<strong>不带正则化</strong>。</li>
+<li>选择交叉验证最小误差的最好组合。</li>
+<li>使用最好的$\Theta$组合和$\lambda$，将其应用到$J_{test}(\Theta)$来看看其泛化能力。</li>
+</ol>
+<h2 id="学习曲线"><a href="#学习曲线" class="headerlink" title="学习曲线"></a>学习曲线</h2><p>在只有几个数据点上训练算法基本会0误差。因为我们永远能找到一个二元方程与这些点完美契合。因此：</p>
+<ul>
+<li>随着训练几个变大，二元方程误差随之增加</li>
+<li>当达到一个特定m或训练集合数量，误差值会趋于平稳。</li>
+</ul>
+<h3 id="高偏差情况"><a href="#高偏差情况" class="headerlink" title="高偏差情况"></a>高偏差情况</h3><p>低训练数量：导致$J_{train}(\Theta)$低，$J_{CV}(\Theta)$高。</p>
+<p>高训练数量：导致$J_{train}(\Theta)$和$J_{CV}(\Theta)$都高。$J_{train}(\Theta)/approxJ_{CV}(\Theta)$</p>
+<p>如果一个学习算法在高偏差情况，获取更多的训练样本不会有多大帮助。</p>
+<p><img src="/images/machine/ml3.png" alt></p>
+<h3 id="高方差情况"><a href="#高方差情况" class="headerlink" title="高方差情况"></a>高方差情况</h3><p>低训练数量：导致$J_{train}(\Theta)$低，$J_{CV}(\Theta)$高。</p>
+<p>高训练数量：随着训练数量增加$J_{train}(\Theta)$增大，$J_{CV}(\Theta)$继续降低并不会区域平稳。并且$J_{train}(\Theta)&lt;J_{CV}(\Theta)$但是两者之间的差继续有效。</p>
+<p>如果学习算法有高方差问题，获得更多的训练数据似乎有帮助。</p>
+<p><img src="/images/machine/ml4.png" alt></p>
+<h2 id="决定下一步做什么（总结）"><a href="#决定下一步做什么（总结）" class="headerlink" title="决定下一步做什么（总结）"></a>决定下一步做什么（总结）</h2><ul>
+<li>获得更多训练用例：修复高方差</li>
+<li>尝试减少训练特性：修复高方差</li>
+<li>添加特性：修复高偏差</li>
+<li>添加多项式特性：修复高偏差</li>
+<li>降低$\lambda$：修复高偏差</li>
+<li>增高$\lambda$：修复高方差</li>
+</ul>
+<h3 id="诊断神经网络"><a href="#诊断神经网络" class="headerlink" title="诊断神经网络"></a>诊断神经网络</h3><ul>
+<li>少量参数的神经网络有欠拟合的倾向。计算方面更省力。</li>
+<li>有大量参数的大型神经网络趋向过拟合。计算方面也更费力。这种情况可以使用正则化来处理过拟合。</li>
+</ul>
+<p>使用单隐藏层是一个很好的开始。你可以使用交叉验证数据集验证不同的隐藏层数训练神经网络，选择表现最好的。</p>
+<h3 id="模型复杂度影响"><a href="#模型复杂度影响" class="headerlink" title="模型复杂度影响"></a>模型复杂度影响</h3><ul>
+<li>低多项式有高偏差和低方法，这种情况，模型拟合始终很差。</li>
+<li>高多项式极好地拟合训练数据但在测试数据比较差。对训练数量有低偏差，但高偏差很严重。</li>
+<li>真实情况中，我们想选择一个泛化很好但同时很合理地拟合数据的模型。</li>
+</ul>
 
                 
 
@@ -333,7 +426,7 @@
             <div class="social-group col m4 s12">
                 <h5 class="white-text">社交</h5>
                 
-                    <a class="social-link" href="http://weibo.com/1956184117" target="_blank">
+                    <a class="social-link" href="https://www.weibo.com/3854297228" target="_blank">
                         <i class="fa fa-2x fa-weibo"></i>
                     </a>
                 
@@ -368,9 +461,7 @@
             <div class="col m8 s12">
                 <h5 class="white-text">友情链接</h5>
                 
-                    <a class="social-link" href="http://raytaylorlin.com/" target="_blank">raytaylorism主题作者的技术博客</a>
-                
-                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">Github地址（测试友情链接）</a>
+                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">raytaylorism主题</a>
                 
             </div>
             
