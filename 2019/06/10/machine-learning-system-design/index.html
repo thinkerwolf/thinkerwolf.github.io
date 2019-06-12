@@ -7,7 +7,7 @@
 
     
 
-    <title>机器学习-神经网络参数和反向传播算法 | One code man</title>
+    <title>机器学习系统设计 | One code man</title>
     <meta name="author" content="wukai">
     
     <meta name="description" content="MathJax.Hub.Config({
@@ -20,7 +20,7 @@
     
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-    <meta property="og:title" content="机器学习-神经网络参数和反向传播算法">
+    <meta property="og:title" content="机器学习系统设计">
     <meta property="og:site_name" content="thinkerwolf">
 
     
@@ -254,12 +254,12 @@
             <div class="article-title">
                 
     
-        <h1>机器学习-神经网络参数和反向传播算法</h1>
+        <h1>机器学习系统设计</h1>
     
 
 
             </div>
-            <time class="pink-link-context" datetime="2019-05-20T10:37:05.000Z"><a href="/2019/05/20/neural-networks-back-propagation/">2019-05-20</a></time>
+            <time class="pink-link-context" datetime="2019-06-10T08:39:50.000Z"><a href="/2019/06/10/machine-learning-system-design/">2019-06-10</a></time>
 
             <span id="busuanzi_container_page_pv" class="read-times-container">
     <i class="fa fa-eye"></i>
@@ -271,13 +271,11 @@
         
             <a href="/tags/machine-learning/" class="chip pink lighten-1">machine-learning</a>
         
-            <a href="/tags/neural-networks/" class="chip pink lighten-1">neural-networks</a>
-        
     </div>
 
 
             <div class="toc pink-link-context hide-on-med-and-down">
-    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#代价函数"><span class="section table-of-contents-text">代价函数</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#反向传播算法"><span class="section table-of-contents-text">反向传播算法</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#反向传播例子"><span class="section table-of-contents-text">反向传播例子</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#反向传播算法步骤"><span class="section table-of-contents-text">反向传播算法步骤</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#随机初始化"><span class="section table-of-contents-text">随机初始化</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#梯度检测"><span class="section table-of-contents-text">梯度检测</span></a></li></ol>
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#确定执行的优先级：垃圾分类案例"><span class="section table-of-contents-text">确定执行的优先级：垃圾分类案例</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#构建垃圾分类器"><span class="section table-of-contents-text">构建垃圾分类器</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#如何降低分类器误差"><span class="section table-of-contents-text">如何降低分类器误差</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#误差分析"><span class="section table-of-contents-text">误差分析</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#不对称分类的误差和评估"><span class="section table-of-contents-text">不对称分类的误差和评估</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#精确度和召回率"><span class="section table-of-contents-text">精确度和召回率</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#权衡精确度和召回率"><span class="section table-of-contents-text">权衡精确度和召回率</span></a></li></ol></li></ol>
 </div>
 
 
@@ -295,74 +293,97 @@
     "HTML-CSS": { availableFonts: ["TeX"] }
   });
 </script>
-<!--加载MathJax的最新文件， async表示异步加载进来 -->
-
 <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js">
 </script>
 
-<h2 id="代价函数"><a href="#代价函数" class="headerlink" title="代价函数"></a>代价函数</h2><p>首先定义一下变量</p>
-<ul>
-<li>L=网络上所有层数</li>
-<li>$sl$=层级l中的单元数量(不包括偏置单元)</li>
-<li>K=输出单元/类型的数量<br>神经网络的消耗函数$J(\theta)$将是Logistics回归的概括。正则化的Logistic回归消耗函数为：<br>$$<br>J(\theta)=-\frac{1}{m}\sum_{i=1}^{m}{y^{(i)}\log(h_\theta(x^{(i)})+(1-y^{(i)})\log(1-h_\theta(x^{(i)}))}<br>$$<br>神经网络的消耗函数$J(\theta)$更为复杂：<br>$\newcommand{\subk}[1]{ #1_k }$<br>$$<br>h_\theta\left(x\right)\in \mathbb{R}^{K}<br>$$</li>
+<h2 id="确定执行的优先级：垃圾分类案例"><a href="#确定执行的优先级：垃圾分类案例" class="headerlink" title="确定执行的优先级：垃圾分类案例"></a>确定执行的优先级：垃圾分类案例</h2><h3 id="构建垃圾分类器"><a href="#构建垃圾分类器" class="headerlink" title="构建垃圾分类器"></a>构建垃圾分类器</h3><p><img src="/images/machine/ml5.png" alt></p>
+<p>监督学习，$x$=邮件特性，$y$=垃圾（1）或非垃圾（0）。</p>
+<p>特性$x$：选择100个象征着垃圾或非垃圾邮件的单词<br>$$<br>x=\begin{bmatrix}<br>        0 \\<br>        1 \\<br>        1 \\<br>        \vdots \\<br>        1 \\<br>        0 \\<br>        \vdots<br>    \end{bmatrix}<br>    \begin{bmatrix}<br>        andrew \\<br>        buy \\<br>        deal \\<br>        \vdots \\<br>        now \\<br>         discount \\<br>        \vdots<br>    \end{bmatrix}<br>$$</p>
+<p>$$<br>x_j = 1 ,如果单词j出现了,否则<br>x_j = 0<br>$$</p>
+<h3 id="如何降低分类器误差"><a href="#如何降低分类器误差" class="headerlink" title="如何降低分类器误差"></a>如何降低分类器误差</h3><ul>
+<li>收集许多数据，比如‘“honeypot”工程。</li>
+<li>基于邮箱线路构建复杂特性。</li>
+<li>为消息正文构建复杂特性。比如“discount”和“discounts”是否应该视为同一个词。</li>
+<li>构建复杂算法检测混淆拼写。（med1cine，w4ches等）</li>
 </ul>
-<p>$$<br>{\left({h_\theta}\left(x\right)\right)}_{i}={i}^{th} \text{output}<br>$$</p>
-<p>$$<br>J(\Theta) = -\frac{1}{m} \left[ \sum\limits_{i=1}^{m} \sum\limits_{k=1}^{k} {y_k}^{(i)} \log \subk{(h_\Theta(x^{(i)}))} + \left( 1 - y_k^{(i)} \right) \log \left( 1- \subk{\left( h_\Theta \left( x^{(i)} \right) \right)} \right) \right] + \frac{\lambda}{2m} \sum\limits_{l=1}^{L-1} \sum\limits_{i=1}^{s_l} \sum\limits_{j=1}^{s_{l+1}} \left( \Theta_{ji}^{(l)} \right)^2<br>$$</p>
-<p>添加一些“和嵌套$\sum$”计算多重输出节点。在等式的第一个部分，方括号之前，有额外的“和嵌套$\sum$”循环计算所有的输出节点。</p>
-<p>在正则化部分，必须计算多重theta矩阵。当前theta矩阵的列数与当前层节点数量相同（包括偏置节点）。当前theta矩阵行数量与下一层节点数量相同（偏置节点除外）。</p>
-<p>笔记：</p>
+<h2 id="误差分析"><a href="#误差分析" class="headerlink" title="误差分析"></a>误差分析</h2><p>解决机器学习问题的推荐方法如下：</p>
 <ul>
-<li>双重求和只是对输出层每个logistic回归的消耗花费进行求和。</li>
-<li>三重求和只是将整个网络中所有单个$\Theta$s的方阵进行相加。</li>
-<li>在三种求和中的<strong>i</strong>并不是训练样本中的<strong>i</strong>。</li>
+<li>首先从简单算法开始，快速实现后尽早地应用到交叉验证上。</li>
+<li>绘制出学习曲线看看更多的数据，更多的特性是否有帮助。</li>
+<li>手动测试交叉验证例子上的错误，尝试定位大多数的误差再哪里产生。</li>
 </ul>
-<h2 id="反向传播算法"><a href="#反向传播算法" class="headerlink" title="反向传播算法"></a>反向传播算法</h2><p>“反向传播”是神经网络中最下化花费函数。我们的目标是计算：<br>$$<br>min_\theta J(\Theta)<br>$$<br>就是，使用一组最优的theta参数最小化花费函数。下面看看计算偏导数的公式：<br>$$<br>\frac{\partial}{\partial\Theta_{i,j}^{(l)}}J(\Theta)<br>$$</p>
-<h3 id="反向传播例子"><a href="#反向传播例子" class="headerlink" title="反向传播例子"></a>反向传播例子</h3><p>以下面这个神经网络作为例子</p>
-<p><img src="/images/pic1.png" alt="pic1"></p>
-<p>$\delta_j^{(j)}$=层级$l$中节点$j$的“误差”。</p>
-<p>每个输出单位（层级L=4）<br>$$<br>\delta_j^{(4)}=a_j^{(4)}-y_i \to \delta^{(4)}=a^{(4)}-y<br>$$</p>
-<p>$$<br>\delta^{(3)}={(\Theta^{(3)})}^T\delta^{(4)} {.\ast} g^{\prime}(z^{(3)}) \to g^{\prime}(z^{(3)})=a^{(3)} {.\ast} (1-a^{(3)})<br>$$</p>
-<p>$$<br>\delta^{(2)}=(\Theta^{(2)})^T\delta^{(3)}{.\ast}g^{\prime}(z^{(2)}) \to g^{\prime}(z^{(2)})=a^{(2)}{.\ast}(1-a^{(2)})<br>$$</p>
-<p>根据公式推导可以得出(忽略正则项)<br>$$<br>\frac{\partial}{\partial\Theta_{i,j}^{(l)}}J(\Theta)=D_{ij}^{(l)}=\frac{1}{m}a_j^{(l)}\delta_i^{(l+1)} %不一定正确<br>$$</p>
-<h3 id="反向传播算法步骤"><a href="#反向传播算法步骤" class="headerlink" title="反向传播算法步骤"></a>反向传播算法步骤</h3><p>反向传播算法背后的直觉认知如下。给定了一个训练样本$(x^{(t)},y^{(t)})$，首先我们运行“前向传递”计算网络中所有的激活项，包括预测函数的输出值。然后针对层级$l$中的节点$j$，我们想计算<strong>对于衡量节点输出中的误差的负责程度</strong>的“误差项”$\delta_j^{(l)}$。</p>
-<p>对于输出节点，我们可以直接衡量出网络的激活项和真实目标值的差值，并且用其来定义”$\delta_j^{(3)}$（因为layer3就是输出层）。针对隐藏层，你可以计算通过层级$(l+1)$中误差项的加权平均数来计算$\delta_j^{(l)}$</p>
+<p>例如，假设有500邮件，我们将100封错误地分类。我们可以手动分析这100封邮件，基于它们的类型手动进行分类。我们随后就能想到新的线索和特性帮助我们正确的将这100封邮件分类。因此，如果大多数错误分类的是窃取密码的邮件，我们就可以发现这类邮件的特性并加入到模型中。我们也可以看看每个单词的变化对误差的影响。</p>
+<p>获取单个数字化的误差结果非常重要。否则很难知晓算法的性能。例如使用次干提取，得到了一个3%的误差而不是5%，然后我们应该将其加入模型。但是如果区分大小写得到3.2%的误差代替3%的误差，我们应该避免使用新特性。因此我们应该尝试新事物，为误差率计算一个数字化的值，根据结果决定是否将新特性加入模型中。</p>
+<h2 id="不对称分类的误差和评估"><a href="#不对称分类的误差和评估" class="headerlink" title="不对称分类的误差和评估"></a>不对称分类的误差和评估</h2><h3 id="精确度和召回率"><a href="#精确度和召回率" class="headerlink" title="精确度和召回率"></a>精确度和召回率</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>真实（y=1）</th>
+<th>真实（y=0）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>预测（y=1）</strong></td>
+<td>True positive</td>
+<td>False positive</td>
+</tr>
+<tr>
+<td><strong>预测（y=0）</strong></td>
+<td>False negative</td>
+<td>True negative</td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li><p>给定训练集合<br>$$<br>{(x^{(1)},y^{(1)}),….,(x^{(m)},y^{(m)})}<br>$$</p>
-</li>
-<li><p>设置$\Delta_{ij}^{(l)}=0$（针对所有的l,i,j）（用来计算 $\frac{\partial}{\partial\Theta_{i,j}^{(l)}}J(\Theta)$）</p>
-</li>
-<li><p>For i=1 to m</p>
-</li>
+<li>精确度</li>
 </ul>
-<p>&emsp;1. Set $a^{(1)}=x^{(i)}$</p>
-<p>&emsp;2. 使用前向传播来计算$a^{(l)}$ l = 2,3,….,L</p>
-<p>&emsp;3. 使用$,y^{(i)}$，计算$\delta^{(L)}=a^{(L)}-y^{(i)}$</p>
-<p>&emsp;4. 计算$\delta^{(L-1)},\delta^{(L-2)},….,\delta^{(2)}$，使用<br>$$<br>\delta^{(l)}=({(\Theta^{(l)})}^T\delta^{(l+1)}) {.\ast} a^{(l)}  {.\ast}(1-a^{(l)})<br>$$<br>&emsp;5. 计算<br>$$<br>\Delta_{ij}^{(l)} := \Delta_{ij}^{(l)}+a_j^{(l)}\delta_i^{(l+1)}<br>$$</p>
-<p>$$<br>\Delta^{(l)}:=\Delta^{(l)}+\delta^{(l+1)}({a^{(l)}}^T)<br>$$</p>
+<p>$$<br>\frac{TruePositive}{PredictedPositive} = \frac{TruePositive}{TruePositive + FalsePositive}<br>$$</p>
 <ul>
-<li>计算梯度</li>
+<li>召回率</li>
 </ul>
-<p>$$<br>D_{ij}^{(l)} := \frac{1}{m}\Delta_{ij}^{(l)}+\lambda\Theta_{ij}^{(l)} \qquad j\ne0<br>$$</p>
-<p>$$<br>D_{ij}^{(l)}:=\frac{1}{m}\Delta_{ij}^{(l)} \qquad j=0<br>$$</p>
-<h2 id="随机初始化"><a href="#随机初始化" class="headerlink" title="随机初始化"></a>随机初始化</h2><p>训练神经网络时，随机初始化参数以进行对称破坏非常重要。一个有效的随机化策略是从范围为$[-\epsilon_init,\epsilon_init]$中随机为$\Theta^{(l)}$选取值。你应该使$\epsilon_init=0.12$。这个范围中的值保证参数足够小，学习更加有效率。</p>
-<h2 id="梯度检测"><a href="#梯度检测" class="headerlink" title="梯度检测"></a>梯度检测</h2><p>在你的神经网络中，你正在最小化代价函数$J(\Theta)$。为了运行参数的梯度检测，你可以想象将“未展开”的参数$\Theta^{(1)},\Theta^{(2)}$变成长的向量$\theta$。通过这种方式，你可以认为代价函数被替代为$J(\theta)$并且可以使用下面的梯度检测过程。</p>
-<p>假定有一个函数$f_i(\theta)$计算$\frac{\partial}{\partial\theta_{i}^{(l)}}J(\theta)$；你想检测$f_i$是否输出正确的偏导数。</p>
-<p>设置：<br>$$<br>\theta^{(i+)}=\theta+\begin{bmatrix}<br>        0 \\<br>        0 \\<br>        \vdots \\<br>        \epsilon \\<br>        \vdots \\<br>        0<br>    \end{bmatrix}<br>    \qquad<br>    \theta^{(i-)}=\theta-\begin{bmatrix}<br>        0 \\<br>        0 \\<br>        \vdots \\<br>        \epsilon \\<br>        \vdots \\<br>        0<br>    \end{bmatrix}<br>$$</p>
-<p>因此$\theta^{(i+)}$与$\theta$相同，除了第$i$个元素加上$\epsilon$，类似$\theta^(i-)$是第$i$个元素减去$\epsilon$。你可以在数值基础上验证$f_i(\theta)$的正确性，验证每个$i$：<br>$$<br>f_i(\theta)\approx\frac{J(\theta^{(i+)})-J(\theta^{(i-)})}{2\epsilon}<br>$$<br>这两个值的近似程度取决于$J$的细节。但是假设$\epsilon=10^-4$，你通常上面公式的左侧和右侧将会相近至少4位有效数字。</p>
-<p>梯度检测假设反向传播已经运算好。我们可以大约将偏导数近似为：<br>$$<br>\frac{\partial}{\partial\Theta_{i,j}^{(l)}}J(\Theta)=\frac{J(\Theta+\epsilon)-J(\Theta-\epsilon)}{2\epsilon}<br>$$</p>
+<p>$$<br>\frac{TruePositive}{ActualPositive} = \frac{TruePositive}{TruePositive + FalseNegative}<br>$$</p>
+<h3 id="权衡精确度和召回率"><a href="#权衡精确度和召回率" class="headerlink" title="权衡精确度和召回率"></a>权衡精确度和召回率</h3><p>如何比较精确度和召回率</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>精确度（P）</th>
+<th>召回率（R）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>算法1</td>
+<td>0.5</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>算法2</td>
+<td>0.7</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>算法3</td>
+<td>0.02</td>
+<td>1.0</td>
+</tr>
+</tbody>
+</table>
+<p>$$<br>2\frac{PR}{P+R}<br>$$</p>
 
                 
 <p class="pink-link-context">
-    <a href="/2019/05/28/meachine-learning-advices/" rel="next" title="机器学习建议">
-    上一篇：机器学习建议
+    <a href="/2019/06/11/implement-threadpoolexecutor/" rel="next" title="手撸一个ThreadPoolExecutor">
+    上一篇：手撸一个ThreadPoolExecutor
   </a>
 </p>
 
 
 
 <p class="pink-link-context">
-    <a href="/2019/05/19/neural-networks-representation/" rel="next" title="机器学习-神经网络表示">
-    下一篇：机器学习-神经网络表示
+    <a href="/2019/05/28/meachine-learning-advices/" rel="next" title="机器学习建议">
+    下一篇：机器学习建议
   </a>
 </p>
 
