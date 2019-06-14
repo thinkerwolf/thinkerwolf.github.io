@@ -188,7 +188,7 @@
 
             <li class="collapse-level-0" collapse-level="0">
                 <a class="no-padding" href="/categories/机器学习/">
-                    机器学习 <span class="right">9 篇</span></a>
+                    机器学习 <span class="right">10 篇</span></a>
                 
             </li>
 
@@ -295,7 +295,7 @@
 <p>内核会实时监控哪些“页”在使用，哪些页在空闲中。如果某些“页”在长时间未使用，内核会把这些“页”交换出物理空间中，放入交换区，如果某个程序访问被交换出的“页”，需要在物理内存中重新开辟一块新的空间，随后将“页”重新复制到物理内存中。</p>
 <p><strong>cat /proc/meminfo</strong>命令可以查看当前内存的状态。</p>
 <p>Linux内核中的进程会有私有的内存，出于安全性考虑。其他进程无法访问到私有内存。为了加强数据分享，用户可以创建共享内存。共享内存中会存储创建内存段的用户，时间、权限等等。</p>
-<p><img src="/images/linux/linux_kernel.png" alt="image"></p>
+<img src="/2017/08/13/linux-kernel/linux_kernel.png" title="This is an example image">
 <h4 id="软件程序管理"><a href="#软件程序管理" class="headerlink" title="软件程序管理"></a>软件程序管理</h4><p>Linux内核将运行的程序称作一个进程，Linux内核在启动时会先启动一个 init process(初始化进程)，内核会为次进程在虚拟内存中开辟一块特殊的区域用来存储数据和代码，随后内核会启动附带的进程。</p>
 <p>Linux内核有多种启动等级（Level），通常是Level1，Level3，Level5，每一种启动等级都会启动不同数量的进程。等级越高，启动的进程数量越多。从系统基本进程 -&gt; 图形界面进行。</p>
 <h4 id="硬件管理"><a href="#硬件管理" class="headerlink" title="硬件管理"></a>硬件管理</h4><p>Linux内核中把一个硬件抽象成一个文件，Linux中有三种硬件文件。</p>
@@ -307,8 +307,8 @@
 <p>Character表示一次只能处理一个字符的硬件。<br>Block表示可以处理一块数据的硬件，比如硬盘。<br>Network表示可以发送和接收数据的硬件，比如网卡。</p>
 <p>Linux为系统的硬件创建特殊的文件，名叫节点（Node）。系统与硬件交流就是通过节点来完成的。每个Node都使用一对数字(major num，monitor num)来标识，相似的设备用相同的major num来表示。在/dev文件夹中可以看到所有硬件Node文件。</p>
 <p>下面的图片是Node文件的详细信息。第一列表示读写权限，读写权限第一个字母表示文件类型。b(Block)、c(Character)。</p>
-<p><img src="/images/linux/linux_node.png" alt="image"></p>
-<h4 id="文件系统管理"><a href="#文件系统管理" class="headerlink" title="文件系统管理"></a>文件系统管理</h4><p><img src="/images/linux/linux_filesystem.png" alt="image"></p>
+<img src="/2017/08/13/linux-kernel/linux_node.png" title="This is an example image">
+<h4 id="文件系统管理"><a href="#文件系统管理" class="headerlink" title="文件系统管理"></a>文件系统管理</h4><img src="/2017/08/13/linux-kernel/linux_filesystem.png" title="This is an example image">
 <h2 id="The-GNU-UNITIES"><a href="#The-GNU-UNITIES" class="headerlink" title="The GNU UNITIES"></a>The GNU UNITIES</h2><p>GNU核心工具有三种。</p>
 <ul>
 <li>处理文件工具</li>

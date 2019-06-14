@@ -1,0 +1,692 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    
+
+    <title>支持向量机（SVM） | One code man</title>
+    <meta name="author" content="wukai">
+    
+    <meta name="description" content="MathJax.Hub.Config({
+    extensions: [&#34;tex2jax.js&#34;],
+    jax: [&#34;input/TeX&#34;, &#34;output/HTML-CSS&#34;],
+    tex2jax: {
+      
+      inlineMath: [ [&#39;$&#39;,&#39;$&#39;], [">
+    
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta property="og:title" content="支持向量机（SVM）">
+    <meta property="og:site_name" content="thinkerwolf">
+
+    
+    <meta property="og:image" content>
+    
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="alternate" href="/atom.xml" title="thinkerwolf" type="application/atom+xml">
+    <link rel="stylesheet" href="/css/lib/materialize.min.css">
+    <link rel="stylesheet" href="/css/lib/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+
+    
+        <link rel="stylesheet" href="/css/lib/prettify-tomorrow-night-eighties.css" type="text/css">
+    
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+</head>
+</html>
+
+<body>
+    <img src="/weixin_favicon.png" style="position: absolute; left: -9999px; opacity: 0; filter: alpha(opacity=0);">
+
+    <nav class="indigo">
+    <div class="nav-wrapper">
+        <a href="#" data-activates="main-menu" class="button-collapse">
+            <i class="fa fa-navicon"></i>
+        </a>
+        <div class>
+            <a href="/" class="brand-logo hide-on-med-and-down">thinkerwolf</a>
+            <ul class="right hide-on-med-and-down">
+                
+                    <li>
+                        <a class="menu-home " href="/">
+                            <i class="fa fa-home "></i>
+                            
+                            首页
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-archive " href="/archives">
+                            <i class="fa fa-archive "></i>
+                            
+                            归档
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                            <i class="fa fa-bookmark "></i>
+                            
+                            分类
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-reading " href="/reading">
+                            <i class="fa fa-book "></i>
+                            
+                            读书
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-about " href="/about">
+                            <i class="fa fa-user "></i>
+                            
+                            关于
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-search modal-trigger " href="#search">
+                            <i class="fa fa-search "></i>
+                            
+                            搜索
+                        </a>
+                    </li>
+                
+            </ul>
+            <div>
+    <ul class="side-nav indigo darken-1" id="main-menu">
+        
+        <li class="side-user">
+            <div class="row">
+                <div class="col s4 no-padding">
+                    <img class="avatar-image circle responsive-img" src="/images/avatar.png" alt="User Avatar">
+                </div>
+                <div class="info col s8 valign-wrapper no-padding">
+                    <div class="valign">
+                        <p class="name">吴凯</p>
+                        <p class="desc">Java后端/机器学习/技术宅</p>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-home " href="/">
+                    <i class="fa fa-home "></i>
+                    
+                    首页
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-archive " href="/archives">
+                    <i class="fa fa-archive "></i>
+                    
+                    归档
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-category category-menu" href="javascript:;" data-activates="category-menu">
+                    <i class="fa fa-bookmark "></i>
+                    
+                    分类
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-reading " href="/reading">
+                    <i class="fa fa-book "></i>
+                    
+                    读书
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-about " href="/about">
+                    <i class="fa fa-user "></i>
+                    
+                    关于
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-search modal-trigger " href="#search">
+                    <i class="fa fa-search "></i>
+                    
+                    搜索
+                </a>
+            </li>
+        
+    </ul>
+
+    <ul class="side-nav indigo darken-1" id="category-menu">
+    
+
+            
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Java/">
+                    Java <span class="right">11 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/机器学习/">
+                    机器学习 <span class="right">10 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/linux/">
+                    linux <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/MySQL/">
+                    MySQL <span class="right">4 篇</span></a>
+                
+            </li>
+
+        
+
+    </ul>
+</div>
+
+        </div>
+    </div>
+</nav>
+
+<div id="search" class="modal search-modal">
+    <div class="row">
+        <div class="input-field col s12">
+              <input id="search-input" type="text">
+              <label for="search-input">搜索</label>
+        </div>
+
+    </div>
+    <div id="search-result" class="search-result col s12">
+
+    </div>
+</div>
+
+
+    <main>
+        <div class="container main-container">
+    <nav class="page-nav hide-on-small-only">
+    <div class="nav-wrapper indigo">
+        <span class="breadcrumb">当前位置（分类目录）</span>
+        
+            
+    
+    
+    <a class="breadcrumb" href="/categories/机器学习/">机器学习</a>
+
+
+        
+
+        
+    </div>
+</nav>
+
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>支持向量机（SVM）</h1>
+    
+
+
+            </div>
+            <time class="pink-link-context" datetime="2019-06-12T17:46:55.000Z"><a href="/2019/06/13/support-vecter-machines/">2019-06-13</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
+        
+            <a href="/tags/machine-learning/" class="chip pink lighten-1">machine-learning</a>
+        
+            <a href="/tags/SVM/" class="chip pink lighten-1">SVM</a>
+        
+    </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#优化目标"><span class="section table-of-contents-text">优化目标</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#简介"><span class="section table-of-contents-text">简介</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#Logistics回归的另一种见解"><span class="section table-of-contents-text">Logistics回归的另一种见解</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#大间距直觉理解"><span class="section table-of-contents-text">大间距直觉理解</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#大间距分类机制"><span class="section table-of-contents-text">大间距分类机制</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#向量内积"><span class="section table-of-contents-text">向量内积</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#SVM决策边界"><span class="section table-of-contents-text">SVM决策边界</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#SVM内核1"><span class="section table-of-contents-text">SVM内核1</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#SVM特征"><span class="section table-of-contents-text">SVM特征</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#内核和相似度"><span class="section table-of-contents-text">内核和相似度</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#例子"><span class="section table-of-contents-text">例子</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#SVM内核2"><span class="section table-of-contents-text">SVM内核2</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#SVM算法"><span class="section table-of-contents-text">SVM算法</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#SVM参数"><span class="section table-of-contents-text">SVM参数</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#使用SVM"><span class="section table-of-contents-text">使用SVM</span></a></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      <!--$表示行内元素，$$表示块状元素 -->
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js">
+</script>
+
+<h2 id="优化目标"><a href="#优化目标" class="headerlink" title="优化目标"></a>优化目标</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>目前为止的监督学习算法都具有近似的性能，所以经常要考虑的东西不是选择算法A或算法B，而是去考虑所使用的数据量。这就体现了我们应用这些算法的技巧，比如学习特性的选择或正则化参数的选择。目前有一种算法广泛的应用于工业和学术界，这个算法被称作<strong>支持向量机</strong>（Support Vector Machine，SVM）。与Logistics和神经网络相比，SVM在学习复杂的非线性方程式能够提供更加清晰和强大的方式。</p>
+<h3 id="Logistics回归的另一种见解"><a href="#Logistics回归的另一种见解" class="headerlink" title="Logistics回归的另一种见解"></a>Logistics回归的另一种见解</h3><img src="/2019/06/13/support-vecter-machines/ml12_1.png" title="This is an example image">
+<p>首先看看Logistics回归的假设函数。</p>
+<ul>
+<li><p>如果y=1，想让$h_\theta(x)\approx1$，$\theta^Tx \gg 0$</p>
+</li>
+<li><p>如果y=0，想让$h_\theta(x)\approx0$，$\theta^Tx \ll 0$</p>
+</li>
+</ul>
+<img src="/2019/06/13/support-vecter-machines/ml12_2.png" title="This is an example image">
+<p>再看看单样本的代价函数（省略了所有用例求和）。从上图可以看出当y分别为1和0时相应的单样本代价函数的曲线图。</p>
+<ul>
+<li>当y=1时，从点(1, 0)开始，首先向右的一条平坦的直线，然后向左的一条与Logistic代价函数相似趋势的一条曲线，这就是当y=1时SVM需要用到的代价函数。</li>
+<li>当y=0时，从点(-1, 0)开始，首先向左的一条平坦的直线，然后向右的一条与Logistic代价函数相似趋势的一条曲线，这就是当y=0时SVM需要用到的代价函数。</li>
+</ul>
+<p>左边的代价函数就为$cost_1(z)$，右边的代价函数为$cost_0(z)$。</p>
+<p>SVM代价函数与Logistic代价函数的效果很相似，但是SVM代价函数可以使SVM拥有计算上的优势并使之后的优化问题更容易解决。</p>
+<img src="/2019/06/13/support-vecter-machines/ml12_3.png" title="This is an example image">
+<p>Logistic代价函数和SVM代价函数对比如上图所示。</p>
+<p>Losigtic使用$\lambda$参数针对后一项进行优化，而SVM使用$C$参数针对前一项进行优化。<br>$$<br>A + \lambda B<br>\\<br>CA + B<br>$$</p>
+<h2 id="大间距直觉理解"><a href="#大间距直觉理解" class="headerlink" title="大间距直觉理解"></a>大间距直觉理解</h2><img src="/2019/06/13/support-vecter-machines/ml12_4.png" title="This is an example image">
+<p>为了使代价函数的值最小化（无限趋向于0）</p>
+<ul>
+<li>针对正样本y=1，$\theta^Tx \ge 1$，但是其实保证$\theta^T x \ge 0$就能够正确的分类。</li>
+<li>正对负样本y=0，$\theta^Tx \le -1$，但是其实保证$\theta^T x &lt; 0$就能够正确的分类。</li>
+</ul>
+<p>这样就相当于在SVM的安全因子中构建一个安全间距。</p>
+<img src="/2019/06/13/support-vecter-machines/ml12_5.png" title="This is an example image">
+<p>假设C非常大的情况下。在处理这种代价函数的参数$\theta$的优化时，会得到一个非常有趣的决策边界。</p>
+<img src="/2019/06/13/support-vecter-machines/ml12_6.png" title="This is an example image">
+<img src="/2019/06/13/support-vecter-machines/ml12_7.png" title="This is an example image">
+<p>现在的大间距的决策边界都是在$C$很大的情况下得到的，实际上SVM对决策边界划分更加敏感，尤其是在大间距分类器的情况下，一个样本都有可能影响决策边界的划分。所以这时需要权衡正则化参数$C$的选择来决策一个相对较好的决策边界。</p>
+<h2 id="大间距分类机制"><a href="#大间距分类机制" class="headerlink" title="大间距分类机制"></a>大间距分类机制</h2><h3 id="向量内积"><a href="#向量内积" class="headerlink" title="向量内积"></a>向量内积</h3><p>给定两个向量：<br>$$<br>u =\begin{bmatrix}<br>        u_1 \\<br>        u_2<br>    \end{bmatrix}<br>$$</p>
+<p>$$<br>v =\begin{bmatrix}<br>        v_1 \\<br>        v_2<br>    \end{bmatrix}<br>$$</p>
+<p>根据<strong>毕达哥拉斯定理</strong>，向量u的<strong>欧几里得</strong>长度为：<br>$$<br>||u|| = \sqrt{u_1^2 + u_2^2}<br>$$<br><img src="/2019/06/13/support-vecter-machines/ml12_8.png" title="This is an example image"></p>
+<p>可以得出（P为向量v到向量u的投影长度）：<br>$$<br>u^Tv=p ||u|| = u_1 v_1 + u_2 v_2<br>$$</p>
+<h3 id="SVM决策边界"><a href="#SVM决策边界" class="headerlink" title="SVM决策边界"></a>SVM决策边界</h3><img src="/2019/06/13/support-vecter-machines/ml12_9.png" title="This is an example image">
+<img src="/2019/06/13/support-vecter-machines/ml12_10.png" title="This is an example image">
+<p>Note：决策边界直线与参数$\theta$向量是垂直的关系。<br>$$<br>\Theta^T x^{(i)} = p^{(i)}||\Theta||<br>$$</p>
+<h2 id="SVM内核1"><a href="#SVM内核1" class="headerlink" title="SVM内核1"></a>SVM内核1</h2><h3 id="SVM特征"><a href="#SVM特征" class="headerlink" title="SVM特征"></a>SVM特征</h3><p>在Logistic回归中，如果要预测y=1，则：<br>$$<br>\theta_0 + \theta_1 x_1 + \theta_2 x_2 + \theta_3 x_1 x_2 + \theta_4 x_1^2 + … \ge 0<br>$$<br>在SVM中，使用$f_j$去代表每个特征，所以上面的等式变成：<br>$$<br>\theta_0 + \theta_1 f_1 + \theta_2 f_2 + \theta_3 f_3 + \theta_4 f_4 + … \ge 0<br>$$<br>如果使用多项式等方式去产生相应$f_j$，相应的计算量会相当的大。有没有一个更好的方式去生成特征？</p>
+<h3 id="内核和相似度"><a href="#内核和相似度" class="headerlink" title="内核和相似度"></a>内核和相似度</h3><img src="/2019/06/13/support-vecter-machines/ml12_11.png" title="This is an example image">
+<p>给定x，使用邻近地标（$l^{(1)} ,l^{(2)}, l^{(3)} …$）的数计算新特性。<br>$$<br>f_1 = similarity(x,l^{(1)})=exp(-\frac{||x-l^{(1)}||^2}{2\sigma^2})<br>$$</p>
+<p>$$<br>f_2 = similarity(x,l^{(2)})=exp(-\frac{||x-l^{(2)}||^2}{2\sigma^2})<br>$$</p>
+<p>$$<br>f_3 = similarity(x,l^{(3)})=exp(-\frac{||x-l^{(3)}||^2}{2\sigma^2})<br>$$</p>
+<p>$$<br>f_j = similarity(x,l^{(j)})=exp(-\frac{||x-l^{(j)}||^2}{2\sigma^2})<br>$$</p>
+<p>这个就被称为<strong>内核</strong>（Kernel），<strong>高斯内核</strong>（Gaussian Kernal）。</p>
+<p>如果$x \approx l^{(1)}$：<br>$$<br>f_1 \approx exp(-\frac{0}{2\sigma^2}) \approx 1<br>$$<br>如果$x$与$l^{(1)}$差距很大：<br>$$<br>f_1=exp(-\frac{large\_num^2}{2\sigma^2})\approx 0<br>$$</p>
+<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><p>下图展示了参数$\sigma$对内核结果的影响。</p>
+<img src="/2019/06/13/support-vecter-machines/ml12_12.png" title="This is an example image">
+<h2 id="SVM内核2"><a href="#SVM内核2" class="headerlink" title="SVM内核2"></a>SVM内核2</h2><h3 id="SVM算法"><a href="#SVM算法" class="headerlink" title="SVM算法"></a>SVM算法</h3><p>给定训练数据：<br>$$<br>(x^{(1)}, y^{(1)}),(x^{(2)}, y^{(2)}),(x^{(3)}, y^{(3)}),…,(x^{(m)}, y^{(m)}),<br>$$<br>地标$l$的选择为：<br>$$<br>l^{(1)}=x^{(1)},l^{(2)}=x^{(2)},l^{(3)}=x^{(3)},…,l^{(m)}=x^{(m)}<br>$$<br>给定训练用例$x$得到新的特性为：<br>$$<br>f_1=similarity(x,l^{(1)})<br>$$</p>
+<p>$$<br>f_2=similarity(x,l^{(2)})<br>$$</p>
+<p>$$<br>…<br>$$</p>
+<p><strong>假设函数</strong>：给定$x$，计算特性$f\in \Re^{(m+1)}$</p>
+<p>​    预测$y=1$，如果$\theta^T \ge 0$    </p>
+<p><strong>训练代价函数</strong>：<br>$$<br>C\sum_{i=1}^{m}{y^{(i)}cost_1(\theta^Tf^{(i)}) + (1-y^{(i)})cost_0(\theta^Tf^{(i)})} + \frac{1}{2}\sum_{j=1}^{m}{\theta_j^2}<br>$$</p>
+<h3 id="SVM参数"><a href="#SVM参数" class="headerlink" title="SVM参数"></a>SVM参数</h3><p>参数$C=\frac{1}{\lambda}$：</p>
+<ul>
+<li>过大：低偏差，高方差。</li>
+<li>过小：高偏差，低方差。</li>
+</ul>
+<p>参数$\sigma^2$：</p>
+<ul>
+<li>过大：特性$f^{(i)}$会非常平稳，导致高偏差，低方差。</li>
+<li>过小：特性$f^{(i)}$会起伏比较大，导致低偏差，高方差。</li>
+</ul>
+<h2 id="使用SVM"><a href="#使用SVM" class="headerlink" title="使用SVM"></a>使用SVM</h2>
+                
+
+
+<p class="pink-link-context">
+    <a href="/2019/06/11/implement-threadpoolexecutor/" rel="next" title="手撸一个ThreadPoolExecutor">
+    下一篇：手撸一个ThreadPoolExecutor
+  </a>
+</p>
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+</div>
+
+        <div class="fixed-action-btn float-sitemap">
+    <a class="btn-floating btn-large pink">
+      <i class="fa fa-caret-square-o-up"></i>
+    </a>
+    <ul>
+      <li><a class="btn-return-top btn-floating waves-effect green" title="回到顶部"><i class="fa fa-arrow-circle-o-up"></i></a></li>
+      <li><a class="btn-floating waves-effect button-collapse yellow darken-1" data-activates="main-menu" title="菜单"><i class="fa fa-navicon"></i></a></li>
+    </ul>
+  </div>
+
+    </main>
+    <footer class="page-footer indigo darken-1">
+    
+    <div class="footer-container container">
+        <div class="row">
+            
+            <div class="social-group col m4 s12">
+                <h5 class="white-text">社交</h5>
+                
+                    <a class="social-link" href="https://www.weibo.com/3854297228" target="_blank">
+                        <i class="fa fa-2x fa-weibo"></i>
+                    </a>
+                
+                    <a class="social-link" href="https://github.com/thinkerwolf" target="_blank">
+                        <i class="fa fa-2x fa-github"></i>
+                    </a>
+                
+                    <a class="social-link" href="/atom.xml" target="_blank">
+                        <i class="fa fa-2x fa-rss"></i>
+                    </a>
+                
+                
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+    <div class="site-visitors-container white-text">
+        <span>
+            <i class="fa fa-user"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+        </span>
+        <span>&nbsp;|&nbsp;</span>
+        <span>
+            <i class="fa fa-eye"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+
+
+            </div>
+            
+
+            
+            <div class="col m8 s12">
+                <h5 class="white-text">友情链接</h5>
+                
+                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">raytaylorism主题</a>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <div class="footer-copyright pink-link-context">
+        <div class="container">
+            © 2019 thinkerwolf.github.io, All rights reserved.
+            <p class="right" style="margin-top: 0;">本博客由 <a href="https://hexo.io">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/raytaylorlin/hexo-theme-raytaylorism">raytaylorism</a></p>
+        </div>
+    </div>
+</footer>
+
+
+    <noscript>
+    <div class="noscript">
+        <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+    </div>
+</noscript>
+<div class="noscript">
+    <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+</div>
+
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/materialize.min.js"></script>
+
+<script>
+    (function($) {
+        $(document).ready(function() {
+            // 隐藏禁用javascript（针对微信内置浏览器）的提示
+            $('.noscript').hide();
+
+            // 图片缩放效果
+            var $imgs = $('img').not('.slider-image').not('.avatar-image').not('.carousel-image').not('.card-cover-image').not('.qrcode');
+
+            // 给图片加上点击放大效果（materialbox插件）
+            $imgs.addClass('materialboxed').each(function(i, el) {
+                $(this).attr('data-caption', $(this).attr('alt') || ' ');
+            }).materialbox();
+
+            // 优化表格的显示
+            $('table').each(function() {
+                var $table = $(this);
+                // 除去多行代码的情况
+                if ($table.find('pre').length == 0) {
+                    $table.addClass('responsive-table striped bordered');
+                }
+            });
+
+            // 首页幻灯片
+            $('.slider').slider({indicators: true, full_width: true, interval: 8000});
+
+            $(".button-collapse").sideNav();
+            $(".category-menu").sideNav();
+
+            // 针对gallery post
+            $('.carousel').carousel({full_width: true});
+            $('.carousel-control.prev').click(function() {
+                $('.carousel').carousel('prev');
+            });
+            $('.carousel-control.next').click(function() {
+                $('.carousel').carousel('next');
+            });
+
+            // 文章目录
+            $('article').not('.simple-article').find('h1').add('h2').add('h3').add('h4').add('h5').add('h6').scrollSpy();
+
+            // 目录随屏幕滚动（防止目录过长越过footer）
+            var $toc = $('.toc');
+            var scrollTargetTop = 0;
+            $(window).scroll(function() {
+                var $activeLink = $toc.find('a.active.section');
+                if ($(window).scrollTop() < 100) {
+                    scrollTargetTop = 0;
+                } else {
+                    if ($activeLink[0]) {
+                        scrollTargetTop = $activeLink.offset().top - $toc.offset().top;
+                    }
+                }
+                $toc.css('top', '-' + scrollTargetTop + 'px');
+            });
+
+            // 修正文章目录的left-border颜色
+            var color = $('.table-of-contents-text').css('color');
+            $('.table-of-contents-link').css('border-left-color', color);
+
+            // 针对移动端做的优化：FAB按钮点击一下收回
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                $('.fixed-action-btn').addClass('click-to-toggle');
+            }
+            // 回到顶部
+            $('.btn-return-top').click(function() {
+                $('body, html').animate({
+                    scrollTop: 0
+                }, 500);
+            });
+
+            // 重置读书页面的Tab标签页的颜色
+            $('li.tab a').hover(function() {
+                $(this).toggleClass('text-lighten-4');
+            });
+            $('.indicator').addClass('pink lighten-2');
+
+            
+            // 添加new标签
+            $('.menu-reading, .menu-about').append('<span class="new badge pink"></span>');
+            
+
+            // 搜索功能
+            $('.modal-trigger').leanModal({
+                // 打开搜索框时自动聚焦
+                ready: function() {
+                    if ($('#search').is(":visible")) {
+                        $('#search-input').focus();
+                    }
+                }
+            });
+            var searchXml = "";
+            if (searchXml.length == 0) {
+             	searchXml = "search.xml";
+            }
+            var searchPath = "/" + searchXml;
+            initSearch(searchPath, 'search-input', 'search-result');
+        });
+
+        // 初始化搜索与匹配函数
+        var initSearch = function(path, search_id, content_id) {
+            'use strict';
+            $.ajax({
+                url: path,
+                dataType: "xml",
+                success: function(xmlResponse) {
+                    // get the contents from search data
+                    var datas = $("entry", xmlResponse).map(function() {
+                        return {
+                            title: $("title", this).text(),
+                            content: $("content", this).text(),
+                            url: $("url", this).text()
+                        };
+                    }).get();
+                    var $input = document.getElementById(search_id);
+                    var $resultContent = document.getElementById(content_id);
+                    $input.addEventListener('input', function() {
+                        var str = '<ul class=\"search-result-list\">';
+                        var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                        $resultContent.innerHTML = "";
+                        if (this.value.trim().length <= 0) {
+                            return;
+                        }
+                        // perform local searching
+                        datas.forEach(function(data) {
+                            var isMatch = true;
+                            var content_index = [];
+                            var data_title = data.title.trim().toLowerCase();
+                            var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                            var data_url = data.url;
+                            var index_title = -1;
+                            var index_content = -1;
+                            var first_occur = -1;
+                            // only match artiles with not empty titles and contents
+                            if (data_title != '' && data_content != '') {
+                                keywords.forEach(function(keyword, i) {
+                                    index_title = data_title.indexOf(keyword);
+                                    index_content = data_content.indexOf(keyword);
+                                    if (index_title < 0 && index_content < 0) {
+                                        isMatch = false;
+                                    } else {
+                                        if (index_content < 0) {
+                                            index_content = 0;
+                                        }
+                                        if (i == 0) {
+                                            first_occur = index_content;
+                                        }
+                                    }
+                                });
+                            }
+                            // show search results
+                            if (isMatch) {
+                                keywords.forEach(function(keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    data_title = data_title.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                });
+
+                                str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                                var content = data.content.trim().replace(/<[^>]+>/g, "");
+                                if (first_occur >= 0) {
+                                    // cut out 100 characters
+                                    var start = first_occur - 20;
+                                    var end = first_occur + 80;
+                                    if (start < 0) {
+                                        start = 0;
+                                    }
+                                    if (start == 0) {
+                                        end = 100;
+                                    }
+                                    if (end > content.length) {
+                                        end = content.length;
+                                    }
+                                    var match_content = content.substring(start, end);
+                                    // highlight all keywords
+                                    keywords.forEach(function(keyword) {
+                                        var regS = new RegExp(keyword, "gi");
+                                        match_content = match_content.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                    });
+
+                                    str += "<p class=\"search-result\">..." + match_content + "...</p>"
+                                }
+                                str += "</li>";
+                            }
+                        });
+                        str += "</ul>";
+                        $resultContent.innerHTML = str;
+                    });
+                }
+            });
+        }
+    })(jQuery);
+</script>
+
+
+<script src="/js/prettify.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("pre").addClass("prettyprint");
+        prettyPrint();
+    });
+</script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+</body>
+</html>
