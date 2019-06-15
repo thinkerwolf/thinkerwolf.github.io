@@ -7,13 +7,16 @@
 
     
 
-    <title>并发 | One code man</title>
+    <title>分布式系统-远程调用 | One code man</title>
     <meta name="author" content="wukai">
+    
+    <meta name="description" content="请求-应答协议这种通信设计用于典型的客户/服务交互中角色和信息的转换。通常情况下，请求-应答协议是同步的。同时也是可靠的，因为服务端的应答是对客户端一个有效的确认。异步的请求应答协议是可选择的。
+该协议基于三个通信原语：doOperation、getRequest、sendReply，该协议将请求和">
     
     
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-    
+    <meta property="og:title" content="分布式系统-远程调用">
     <meta property="og:site_name" content="thinkerwolf">
 
     
@@ -231,30 +234,163 @@
 
     <main>
         <div class="container main-container">
-    
-
-<nav class="page-nav hide-on-small-only">
+    <nav class="page-nav hide-on-small-only">
     <div class="nav-wrapper indigo">
-        <span class="breadcrumb">当前位置（标签）</span>
+        <span class="breadcrumb">当前位置（分类目录）</span>
         
+            
+    
+    
+    <a class="breadcrumb" href="/categories/Distributed-System/">Distributed System</a>
+
 
         
-            <a class="breadcrumb" href="/tags/并发/">并发</a>
+
         
     </div>
 </nav>
 
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>分布式系统-远程调用</h1>
+    
 
 
-    <div class="collection mt-0">
+            </div>
+            <time class="pink-link-context" datetime="2019-06-15T14:53:39.000Z"><a href="/2019/06/15/distributed-system-remote-invoke/">2019-06-15</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
         
-            <a href="/2019/06/11/implement-threadpoolexecutor/" class="collection-item grey-text text-darken-1">
-                <time datetime="2019-06-10T20:33:27.000Z">2019-06-11</time>
-                <span>&nbsp;&nbsp;&nbsp;</span>
-                手撸一个ThreadPoolExecutor
-            </a>
+            <a href="/tags/RPC/" class="chip pink lighten-1">RPC</a>
+        
+            <a href="/tags/RMI/" class="chip pink lighten-1">RMI</a>
         
     </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#请求-应答协议"><span class="section table-of-contents-text">请求-应答协议</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#远程过程调用"><span class="section table-of-contents-text">远程过程调用</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#RPC设计"><span class="section table-of-contents-text">RPC设计</span></a></li></ol></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <h2 id="请求-应答协议"><a href="#请求-应答协议" class="headerlink" title="请求-应答协议"></a>请求-应答协议</h2><p>这种通信设计用于典型的客户/服务交互中角色和信息的转换。通常情况下，请求-应答协议是同步的。同时也是可靠的，因为服务端的应答是对客户端一个有效的确认。异步的请求应答协议是可选择的。</p>
+<p>该协议基于三个通信原语：doOperation、getRequest、sendReply，该协议将请求和应答进行匹配，用于提供传输保证。如果使用UDP数据报，通过该协议提供传输保证。</p>
+<p>客户使用doOperation方法调用远程操作，方法参数指定远程调用服务器、待调用的操作以及请求的附加信息（参数）。其结果是包含应答内容的字节数组。doOperation方法向某个服务器发送请求信息，该服务器的IP地址、端口号以参数形式出现的远程引用中指定。在发送请求消息后，doOperation方法通过receive方法接受应答信息，并从应答信息中提取消息回传给调用者。</p>
+<p>服务器进程通过getRequest方法获得请求信息，调用指定操作后，通过sendReply方法向客户端发送应答信息。原来的doOperation就会解除阻塞，客户端进程继续执行。</p>
+<p><strong>消息标识符</strong>    如果需要提供类似与可靠消息传递或请求-应答通信等额外特性，任何消息管理方法都要求每个消息必须有统一的消息标识符。通过消息标识符才可以引用消息。</p>
+<p><strong>请求-应答协议故障模型</strong>   如果三原语操作基于UDP数据报，那么他们会遇到相同的通信故障。</p>
+<ul>
+<li>存在遗漏故障</li>
+<li>没有保证消息按照其发送顺序传输</li>
+</ul>
+<p>考虑到服务器故障或请求、应答消息被丢弃的情况，doOperation方法在等待服务器应答时使用超时处理。</p>
+<p><strong>超时</strong>   超时发生时，最简单的方法是立即返回给客户端一个异常信息。但是引起超时原因也可能是请求或应答消息丢失。为了避免消息丢失的可能性，doOperation方法会重复地发送请求消息直到收到应答或者有理由相信服务端未做应答而不是丢失消息。</p>
+<p><strong>丢弃重复消息</strong>    当请求消息重复传输时，服务器可能不止一次地接收到该消息。服务器可能接受第一个消息花费了比客户端的超时时间更长的时间执行。导致服务器可能不止一次地执行某个操作。为了避免这种情况，该协议设计能识别带有相同请求标识的连续消息，并过滤重复消息。如果服务器未应答则无需处理。</p>
+<p><strong>丢失应答消息</strong>    如果一个服务器收到重复的请求消息已经发送了应答，除非已经保存原先执行结果，否则它需要执行这个操作获得结果。一些服务器不止一次的执行操作得到了相同结果。一个<strong>幂等操作</strong>值执行一次的效果与多次执行的效果相同。如果服务器的操作都是幂等操作，就没有必要采取特殊举措防止操作多次执行。</p>
+<p><strong>历史</strong>    要求重新要求传输应答而不需要重新执行操作的服务器来说，可以使用历史。和历史使用相关的是内存开销，如果服务器不能确定合适不需要重新传输消息，历史的内存开销会很大。</p>
+<p><strong>交互协议类型</strong> </p>
+<ul>
+<li>请求-R协议 ： 基于UDP数据报实现，可能有通信故障</li>
+<li>请求-应答（RR）协议：基于请求-应答协议，不需要特殊的确认步骤。因此UDP数据报丢失而引起的通信故障可以通过带有重新过滤请求消息和报错应答消息历史的方式避免。</li>
+<li>请求-应答-确认应答（RRA）协议：该确认应答消息中包含了来自被确认应答消息的requestId。使服务器可以从历史中删除相应的条目。</li>
+</ul>
+<p><strong>请求应答协议TCP流的使用</strong>    接受数据报的缓冲区合适的大小经常很难确定。因为过程的参数或结果可能是任意长度，所以数据报的长度的限定不适用于透明RMI或RPC系统使用。</p>
+<p><strong>基于TCP流的请求-应答协议</strong>    为了避免实现多包协议，因为TCP流可以传输任意长度的参数和结果。尤其是在JAVA序列化是一种允许客户端、服务器之间传输任意长度消息的流协议。如果使用TCP协议，就能保证可靠的传输请求消息和应答消息，对于请求-应答协议就没有必要去处理消息的重传、重复消息的过滤、接收。</p>
+<p>如果应用不要求TCP提供的所有机制，可以在定制UDP协议。例如sun nfs。</p>
+<h2 id="远程过程调用"><a href="#远程过程调用" class="headerlink" title="远程过程调用"></a>远程过程调用</h2><p>使分布式编程和传统编程相类似，即实现了高级的分布透明性。这种相似性通过将传统的过程调用模型扩展到分布式环境方式实现。在RPC调用远程机器上的程序就像是调用本地的地址空间中一样。那么底层RPC系统就隐藏了分布式环境中重要的部分，包括对参数和结果编码和解码、消息传递以及保留过程调用的语义。</p>
+<h3 id="RPC设计"><a href="#RPC设计" class="headerlink" title="RPC设计"></a>RPC设计</h3><p>RPC设计三个重要概念：</p>
+<ul>
+<li>RPC推动的编程风格-接口编程。</li>
+<li>调用语义。</li>
+<li>透明性问题和如何与远程过程调用关联。</li>
+</ul>
+<p><strong>接口编程</strong>   大多数现代编程语言提供了一个把一个程序组织称一系列能彼此通信的模块的方法。模块之间的通信可以依靠模块间的过程调用。为了控制模块可能的交互，必须为每一个模块定义显式的接口。模块接口可供其他模块方式访问过程和变量。实现后模块隐藏除接口以外所有的信息。只要模块接口名保持不变，可以随意改动实现而不影响调用者。</p>
+<p><strong><em>分布式系统的接口</em></strong>：在分布式程序中，模块能够运行在不同的进程中。每个服务器为客户端提供可调用方法集合。“服务接口（Service Interface）”这个术语涉及服务器提供的过程的说明、定义每个过程参数的格式。</p>
+<p>在分布式编程中使用接口有很多好处，都源于接口和实现之间的分离。</p>
+<ul>
+<li>程序员只需要关心服务提供的接口，不需要关系具体的实现。</li>
+<li>推演（潜在的异构）分布式系统，无需关系编程语言和实现服务。</li>
+<li>只要接口不变，实现可以改变。</li>
+</ul>
+<p>服务接口的定义受分布式底层的影响：</p>
+<ul>
+<li>一个模块无法访问另一个接口的变量。</li>
+<li>本地调用过程中参数传递机制不适用与调用者和过程在不同的进程中。当某个参数为输入\输出时，请求和应答消息中都必须传递它的值。</li>
+<li>一个过程的地址对于另一个进程是无效的，所以不能地址不能作为参数被调用或返回。</li>
+</ul>
+<p><strong><em>接口定义语言</em></strong>：RPC机制可以集成到某种语言中，只要该语言包含适当的定义接口的语法。并允许将输入和输入映射成该语言中正常的参数。这在只使用一种语言的系统中非常有用。</p>
+<p>但是实际情况是每个系统可能都是使用不同的语言实现，这是使用一套跨平台的接口定义语言（Interface Definition Lanauage, IDL）十分有用。</p>
+<p><strong>RPC调用语义</strong>    请求-应答模型中保证传输的主要方式有：</p>
+<ul>
+<li>重发请求消息</li>
+<li>过滤重复消息</li>
+<li>重传结果</li>
+</ul>
+<p>将这些选择（<strong>容错措施</strong>）组合便导致了调用者所见到的远程调用可靠性的各种语义。下面的表格给除了各种组合可能的语义。</p>
+<table>
+<thead>
+<tr>
+<th>重发请求消息</th>
+<th>过滤重复请求</th>
+<th>重新执行或重传应答</th>
+<th>调用语义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>N</td>
+<td>不支持</td>
+<td>不支持</td>
+<td>获取</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>N</td>
+<td>重新执行过程</td>
+<td>至少一次</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Y</td>
+<td>重传应答</td>
+<td>至多一次</td>
+</tr>
+</tbody>
+</table>
+<p><strong>透明性</strong>   </p>
+
+                
+
+
+<p class="pink-link-context">
+    <a href="/2019/06/13/support-vecter-machines/" rel="next" title="支持向量机（SVM）">
+    下一篇：支持向量机（SVM）
+  </a>
+</p>
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
 
 
 </div>
