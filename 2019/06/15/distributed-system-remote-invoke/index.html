@@ -173,15 +173,7 @@
 
             <li class="collapse-level-0" collapse-level="0">
                 <a class="no-padding" href="/categories/Java/">
-                    Java <span class="right">11 篇</span></a>
-                
-            </li>
-
-        
-
-            <li class="collapse-level-0" collapse-level="0">
-                <a class="no-padding" href="/categories/Distributed-System/">
-                    Distributed-System <span class="right">1 篇</span></a>
+                    Java <span class="right">13 篇</span></a>
                 
             </li>
 
@@ -196,6 +188,30 @@
         
 
             <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/linux/">
+                    linux <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Network/">
+                    Network <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-1" collapse-level="1">
+                <a class="no-padding" href="/categories/Network/Java/">
+                    Java <span class="right">1 篇</span></a>
+                
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
                 <a class="no-padding" href="/categories/MySQL/">
                     MySQL <span class="right">4 篇</span></a>
                 
@@ -204,8 +220,8 @@
         
 
             <li class="collapse-level-0" collapse-level="0">
-                <a class="no-padding" href="/categories/linux/">
-                    linux <span class="right">1 篇</span></a>
+                <a class="no-padding" href="/categories/Distributed-System/">
+                    Distributed-System <span class="right">1 篇</span></a>
                 
             </li>
 
@@ -281,7 +297,7 @@
 
 
             <div class="toc pink-link-context hide-on-med-and-down">
-    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#请求-应答协议"><span class="section table-of-contents-text">请求-应答协议</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#远程过程调用"><span class="section table-of-contents-text">远程过程调用</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#RPC设计"><span class="section table-of-contents-text">RPC设计</span></a></li></ol></li></ol>
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#请求-应答协议"><span class="section table-of-contents-text">请求-应答协议</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#远程过程调用"><span class="section table-of-contents-text">远程过程调用</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#RPC设计"><span class="section table-of-contents-text">RPC设计</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#远程方法调用"><span class="section table-of-contents-text">远程方法调用</span></a></li></ol>
 </div>
 
 
@@ -321,7 +337,7 @@
 <p><strong><em>分布式系统的接口</em></strong>：在分布式程序中，模块能够运行在不同的进程中。每个服务器为客户端提供可调用方法集合。“服务接口（Service Interface）”这个术语涉及服务器提供的过程的说明、定义每个过程参数的格式。</p>
 <p>在分布式编程中使用接口有很多好处，都源于接口和实现之间的分离。</p>
 <ul>
-<li>程序员只需要关心服务提供的接口，不需要关系具体的实现。</li>
+<li>程序员只需要关心服务提供的接口，不需要关心具体的实现。</li>
 <li>推演（潜在的异构）分布式系统，无需关系编程语言和实现服务。</li>
 <li>只要接口不变，实现可以改变。</li>
 </ul>
@@ -332,7 +348,8 @@
 <li>一个过程的地址对于另一个进程是无效的，所以不能地址不能作为参数被调用或返回。</li>
 </ul>
 <p><strong><em>接口定义语言</em></strong>：RPC机制可以集成到某种语言中，只要该语言包含适当的定义接口的语法。并允许将输入和输入映射成该语言中正常的参数。这在只使用一种语言的系统中非常有用。</p>
-<p>但是实际情况是每个系统可能都是使用不同的语言实现，这是使用一套跨平台的接口定义语言（Interface Definition Lanauage, IDL）十分有用。</p>
+<p>但是实际情况是每个系统可能都是使用不同的语言实现，这是使用一套跨平台的接口定义语言（Interface Definition Lanauage, IDL）十分有用。下面的代码就是GRPC的接口定义。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">syntax = &quot;proto3&quot;;</span><br><span class="line">package customer;</span><br><span class="line"></span><br><span class="line">// The Customer sercie definition</span><br><span class="line">service Customer &#123;</span><br><span class="line">    // Get all Customers with filter - A server-to-client streaming RPC.</span><br><span class="line">    rpc GetCustomers(CustomerFilter) returns (stream CustomerRequest) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    // Create a new Customer - A simple RPC</span><br><span class="line">    rpc CreateCustomer (CustomerRequest) returns (CustomerResponse) &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message CustomerRequest &#123;</span><br><span class="line">    int32 id = 1;   // Unique ID number for a Customer.</span><br><span class="line">    string name = 2;</span><br><span class="line">    string email = 3;</span><br><span class="line">    string phone = 4;</span><br><span class="line"></span><br><span class="line">    message Address &#123;</span><br><span class="line">        string street = 1;</span><br><span class="line">        string city = 2;</span><br><span class="line">        string state = 3;</span><br><span class="line">        string zip = 4;</span><br><span class="line">        bool isShippingAddress = 5;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    repeated Address addresses = 5;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message CustomerResponse &#123;</span><br><span class="line">    int32 id = 1;</span><br><span class="line">    bool success = 2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message CustomerFilter &#123;</span><br><span class="line">    string keyword = 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>RPC调用语义</strong>    请求-应答模型中保证传输的主要方式有：</p>
 <ul>
 <li>重发请求消息</li>
@@ -371,8 +388,30 @@
 </tbody>
 </table>
 <p><strong>透明性</strong>   </p>
+<p>RPC致力于提供最少的位置透明性和访问透明性，隐藏过程的物理位置，也以同样的方式访问本地和远程的过程。</p>
+<p>同样，远程调用失败的概率要更高，其中涉及了另一台计算机，另一个进程。不论选择哪种语义调用，总有获取不到结果的情形，而且在出现故障的情况下，无法判别故障是源于网络失败还是源于远程服务器进程故障。这要求发起远程调用的程序能从故障中恢复。</p>
+<p>远程调用的延迟要远比本地调用大上好几个数量级，因此远程调用时需要将延迟因素考虑进去。例如尽可能减少远程交互。IDL的设计者也面临远程调用是否透明的抉择，例如，当客户与远程无法通信时，就抛出一个异常共客户端处理。IDL也可以提供一种指定过程调用语义的机制。</p>
+<h2 id="远程方法调用"><a href="#远程方法调用" class="headerlink" title="远程方法调用"></a>远程方法调用</h2><p>远程方法调用（Remote Method Invacation）RPC和RMI之间具有相似性，只是RMI被扩展到了对象的层面。访问对象可以调用远程对象的方法。RMI和RPC的共性如下：</p>
+<ul>
+<li>都支持接口编程。</li>
+<li>都是典型的请求-应答协议构造，并提供一系列如最少一次、至多一次的调用语义。</li>
+<li>都提供相似的透明性。</li>
+</ul>
+<p>下面的不同会在复杂的分布式应用带来额外的功能：</p>
+<ul>
+<li>能够使用所有面向对象编程的功能。包括类、对象、继承的使用。</li>
+<li>基于RMI系统中的所有对象都有唯一的对象引用（无论是远程还是本地）。对象引用可以当做参数进行传递，因此RMI比RPC提供更丰富的参数传递语义。</li>
+</ul>
+<p><strong>创建代理类、分发器类和骨架类</strong>     在RMI使用的代理类、分发器类和骨架类由接口编译器自动创建。</p>
+<p>动态调用：可替换代理的选择，上面提到的代理是静态的，即代理类是通过接口定义生成的，并编译到客户端代码中。但是有些情况下对象的远程接口在编译期无法确定。</p>
 
                 
+<p class="pink-link-context">
+    <a href="/2019/06/21/network-refactor-model/" rel="next" title="Reactor网络模型">
+    上一篇：Reactor网络模型
+  </a>
+</p>
+
 
 
 <p class="pink-link-context">
