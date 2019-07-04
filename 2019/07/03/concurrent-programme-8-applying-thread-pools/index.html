@@ -1,0 +1,681 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    
+
+    <title>Java并发编程-应用线程池 | One code man</title>
+    <meta name="author" content="wukai">
+    
+    <meta name="description" content="MathJax.Hub.Config({
+    extensions: [&#34;tex2jax.js&#34;],
+    jax: [&#34;input/TeX&#34;, &#34;output/HTML-CSS&#34;],
+    tex2jax: {
+      
+      inlineMath: [ [&#39;$&#39;,&#39;$&#39;], [">
+    
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta property="og:title" content="Java并发编程-应用线程池">
+    <meta property="og:site_name" content="thinkerwolf">
+
+    
+    <meta property="og:image" content>
+    
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="alternate" href="/atom.xml" title="thinkerwolf" type="application/atom+xml">
+    <link rel="stylesheet" href="/css/lib/materialize.min.css">
+    <link rel="stylesheet" href="/css/lib/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+
+    
+        <link rel="stylesheet" href="/css/lib/prettify-tomorrow-night-eighties.css" type="text/css">
+    
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+</head>
+</html>
+
+<body>
+    <img src="/weixin_favicon.png" style="position: absolute; left: -9999px; opacity: 0; filter: alpha(opacity=0);">
+
+    <nav class="indigo">
+    <div class="nav-wrapper">
+        <a href="#" data-activates="main-menu" class="button-collapse">
+            <i class="fa fa-navicon"></i>
+        </a>
+        <div class="">
+            <a href="/" class="brand-logo hide-on-med-and-down">thinkerwolf</a>
+            <ul class="right hide-on-med-and-down">
+                
+                    <li>
+                        <a class="menu-home " href="/" >
+                            <i class="fa fa-home "></i>
+                            
+                            首页
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-archive " href="/archives" >
+                            <i class="fa fa-archive "></i>
+                            
+                            归档
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-category category-menu" href="javascript:;" data-activates="category-menu" >
+                            <i class="fa fa-bookmark "></i>
+                            
+                            分类
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-reading " href="/reading" >
+                            <i class="fa fa-book "></i>
+                            
+                            读书
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-about " href="/about" >
+                            <i class="fa fa-user "></i>
+                            
+                            关于
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a class="menu-search modal-trigger " href="#search" >
+                            <i class="fa fa-search "></i>
+                            
+                            搜索
+                        </a>
+                    </li>
+                
+            </ul>
+            <div>
+    <ul class="side-nav indigo darken-1" id="main-menu">
+        
+        <li class="side-user">
+            <div class="row">
+                <div class="col s4 no-padding">
+                    <img class="avatar-image circle responsive-img" src="/images/avatar.png" alt="User Avatar">
+                </div>
+                <div class="info col s8 valign-wrapper no-padding">
+                    <div class="valign">
+                        <p class="name">吴凯</p>
+                        <p class="desc">Java后端/机器学习/技术宅</p>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-home " href="/" >
+                    <i class="fa fa-home "></i>
+                    
+                    首页
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-archive " href="/archives" >
+                    <i class="fa fa-archive "></i>
+                    
+                    归档
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-category category-menu" href="javascript:;" data-activates="category-menu" >
+                    <i class="fa fa-bookmark "></i>
+                    
+                    分类
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-reading " href="/reading" >
+                    <i class="fa fa-book "></i>
+                    
+                    读书
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-about " href="/about" >
+                    <i class="fa fa-user "></i>
+                    
+                    关于
+                </a>
+            </li>
+        
+            <li class="no-padding">
+                <a class="waves-effect menu-search modal-trigger " href="#search" >
+                    <i class="fa fa-search "></i>
+                    
+                    搜索
+                </a>
+            </li>
+        
+    </ul>
+
+    <ul class="side-nav indigo darken-1" id="category-menu">
+    
+
+            
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Java/">
+                    Java <span class="right">19 篇</span></a>
+                </a>
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/机器学习/">
+                    机器学习 <span class="right">10 篇</span></a>
+                </a>
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/MySQL/">
+                    MySQL <span class="right">4 篇</span></a>
+                </a>
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Network/">
+                    Network <span class="right">1 篇</span></a>
+                </a>
+            </li>
+
+        
+
+            <li class="collapse-level-1" collapse-level="1">
+                <a class="no-padding" href="/categories/Network/Java/">
+                    Java <span class="right">1 篇</span></a>
+                </a>
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/linux/">
+                    linux <span class="right">1 篇</span></a>
+                </a>
+            </li>
+
+        
+
+            <li class="collapse-level-0" collapse-level="0">
+                <a class="no-padding" href="/categories/Distributed-System/">
+                    Distributed-System <span class="right">1 篇</span></a>
+                </a>
+            </li>
+
+        
+
+    </ul>
+</div>
+
+        </div>
+    </div>
+</nav>
+
+<div id="search" class="modal search-modal">
+    <div class="row">
+        <div class="input-field col s12">
+              <input id="search-input" type="text">
+              <label for="search-input">搜索</label>
+        </div>
+
+    </div>
+    <div id="search-result" class="search-result col s12">
+
+    </div>
+</div>
+
+
+    <main>
+        <div class="container main-container">
+    <nav class="page-nav hide-on-small-only">
+    <div class="nav-wrapper indigo">
+        <span class="breadcrumb">当前位置（分类目录）</span>
+        
+            
+    
+    
+    <a class="breadcrumb" href="/categories/Java/">Java</a>
+
+
+        
+
+        
+    </div>
+</nav>
+
+<article>
+    <div class="card">
+        <div class="card-content">
+            
+
+            <div class="article-title">
+                
+    
+        <h1>Java并发编程-应用线程池</h1>
+    
+
+
+            </div>
+            <time class="pink-link-context" datetime="2019-07-03T15:34:58.000Z"><a href="/2019/07/03/concurrent-programme-8-applying-thread-pools/">2019-07-03</a></time>
+
+            <span id="busuanzi_container_page_pv" class="read-times-container">
+    <i class="fa fa-eye"></i>
+    <span id="busuanzi_value_page_pv"></span>
+</span>
+
+            
+    <div class="tags-row">
+        
+            <a href="/tags/Java并发编程/" class="chip pink lighten-1">Java并发编程</a>
+        
+    </div>
+
+
+            <div class="toc pink-link-context hide-on-med-and-down">
+    <ol class="section table-of-contents"><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#任务和策略间的隐性耦合"><span class="section table-of-contents-text">任务和策略间的隐性耦合</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#线程饥饿死锁"><span class="section table-of-contents-text">线程饥饿死锁</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#耗时操作"><span class="section table-of-contents-text">耗时操作</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#线程池大小的选定"><span class="section table-of-contents-text">线程池大小的选定</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#配置ThreadPoolExecutor"><span class="section table-of-contents-text">配置ThreadPoolExecutor</span></a><ol class="section table-of-contents-child"><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#线程的创建和销毁"><span class="section table-of-contents-text">线程的创建和销毁</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#管理队列任务"><span class="section table-of-contents-text">管理队列任务</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#饱和策略"><span class="section table-of-contents-text">饱和策略</span></a></li><li class="section table-of-contents-item section table-of-contents-level-3"><a class="section table-of-contents-link" href="#线程工厂"><span class="section table-of-contents-text">线程工厂</span></a></li></ol></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#扩展ThreadPoolExecutor"><span class="section table-of-contents-text">扩展ThreadPoolExecutor</span></a></li><li class="section table-of-contents-item section table-of-contents-level-2"><a class="section table-of-contents-link" href="#并行递归算法"><span class="section table-of-contents-text">并行递归算法</span></a></li></ol>
+</div>
+
+
+            <div class="entry pink-link-context">
+                <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      <!--$表示行内元素，$$表示块状元素 -->
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js">
+</script>
+
+<h2 id="任务和策略间的隐性耦合"><a href="#任务和策略间的隐性耦合" class="headerlink" title="任务和策略间的隐性耦合"></a>任务和策略间的隐性耦合</h2><p>尽管Executer框架为制定和修改执行策略提供了相当大的灵活度，但是并非单个策略适合所有的任务。以下类型的任务需要明确指定一个策略。</p>
+<p><strong>依赖性任务</strong>。大多数运行良好的运行任务是独立的。但是如果提交的任务之间有相互依赖，这就对执行策略带来了约束。</p>
+<p><strong>线程限制的任务</strong>。单线程化的Executor对比任意的线程池，可以对同步作出更强的承诺。</p>
+<p><strong>响应时间敏感的任务</strong>。GUI对应用程序的响应时间是很敏感的，如果将一个用户操作提交到一个单线程化Executor或一个只包含少量线程的线程池中，会削弱Executor的响应性。</p>
+<p><strong>使用ThreadLocal任务</strong>。ThreadLocal会为每个线程保存一个私有的变量。但是Executor框架在需求不高的时候会重用线程，在需求高的是创建新的线程，如果抛出异常就会被全新的工作线程取代。在线程池中，不应该用ThreadLocal去传递任务间数值。</p>
+<h3 id="线程饥饿死锁"><a href="#线程饥饿死锁" class="headerlink" title="线程饥饿死锁"></a>线程饥饿死锁</h3><p>如果一个线程池中的一个任务依赖其他任务的执行，就可能产生死锁。在单一线程的Executor中更易发生。父任务在等待子任务完成，而因为子任务和父任务在同一个线程中执行，子任务同时也在等父任务完成，造成<strong>线程饥饿死锁</strong>（Thread starvation deadlock）。下面就是饥饿死锁的一个例子。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadPoolDeadLock</span> </span>&#123;</span><br><span class="line">    ExecutorService exec = Executors.newFixedThreadPool(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RenderPageTask</span> <span class="keyword">implements</span> <span class="title">Callable</span>&lt;<span class="title">String</span>&gt; </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> throw Exception </span>&#123;</span><br><span class="line">            Future&lt;String&gt; head, foot;</span><br><span class="line">            head = exec.submit(<span class="keyword">new</span> Callable&lt;String&gt; &#123;</span><br><span class="line">                 <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> throw Exception </span>&#123; </span><br><span class="line">                 	<span class="keyword">return</span> <span class="string">"header"</span>;</span><br><span class="line">                 &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            foot = exec.submit(<span class="keyword">new</span> Callable&lt;String&gt; &#123;</span><br><span class="line">                 <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> throw Exception </span>&#123; </span><br><span class="line">                 	<span class="keyword">return</span> <span class="string">"footer"</span>;</span><br><span class="line">                 &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="comment">// 产生死锁，等待子任务完成</span></span><br><span class="line">            <span class="keyword">return</span> head.get() + <span class="string">" page "</span> + foot.get(); </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Future&lt;String&gt; <span class="title">execute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> exec.submit(<span class="keyword">new</span> RenderPageTask());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="耗时操作"><a href="#耗时操作" class="headerlink" title="耗时操作"></a>耗时操作</h3><p>任务时间过长阻塞线程，就算不产生死锁也会影响程序的响应性能。利用库中一些限时阻塞方法可以解决此类问题，比如BlockingQueu.put、poll，Thread.join，CountdownLatch.await都有限时阻塞的版本。</p>
+<h2 id="线程池大小的选定"><a href="#线程池大小的选定" class="headerlink" title="线程池大小的选定"></a>线程池大小的选定</h2><p>定制线程池的大小并不是多精密的活，需要避免就是不要”过大”和“过小”。在一个有N个处理器的系统执行密集型的任务通常使用（N+1）个线程。I/O操作和阻塞性任务就需要更大线程池。</p>
+<p>在一个基准负载下，使用几种不同大小的线程池运行应用程序，观察CPU利用水平。</p>
+<p>给定以下定义：</p>
+<p>$$<br>N_{cpu} = CPU数量<br>$$</p>
+<p>$$<br>U_{cpu}=目标CPU使用率<br>$$</p>
+<p>$$<br>W/C=等待时间与计算时间的比率<br>$$</p>
+<p>为了保持处理器达到期望的使用率，最优的池大小为：<br>$$<br>N_{threads}=N_{cpu}\times U_{cpu} \times (1+W/C)<br>$$</p>
+<h2 id="配置ThreadPoolExecutor"><a href="#配置ThreadPoolExecutor" class="headerlink" title="配置ThreadPoolExecutor"></a>配置ThreadPoolExecutor</h2><h3 id="线程的创建和销毁"><a href="#线程的创建和销毁" class="headerlink" title="线程的创建和销毁"></a>线程的创建和销毁</h3><p>核心池大小（core pool size），最大池大小（max pool size）和存活时间（keep alive time）共同管理线程池大小。线程池的数量永远保持这核心池数量直到创建到最大池数量都不会创建新的线程。如果提交的任务超过最大任务数量且线程池数量已达最大，任务将会被拒绝。如果一个线程闲置了超过存活时间，会回收此线程，这样通过调节核心池大小和存活时间可以让资源运用在别的地方。</p>
+<h3 id="管理队列任务"><a href="#管理队列任务" class="headerlink" title="管理队列任务"></a>管理队列任务</h3><p>有时会遇到客户端抛给线程池的任务过多，超出了线程池的可以处理的速度，这是也有可能造成资源耗尽的情况，即便没有耗尽内存，也有可能导致程序的响应时间变得糟糕。</p>
+<p>ThreadPoolExecutor允许使用一个BlockingQueue去做任务队列。任务队列排列有三种方式：无限队列、优先队列和同步移交三种方式。</p>
+<p>newFixedThreadPool和newSingleThreadPool使用的是无限的LinkedBlockingQueue，工作队列会无限的增加。一个稳妥的方式是使用有限队列，当队列满了之后还有相应的饱和拒绝策略处理任务（RejectedExecutionHandler）。</p>
+<p>对于庞大的无限的池，可以使用SynchronousQueue，完全绕开队列，将任务直接从生产者移交给工作线程。为了把一个任务放入SynchronousQueue中，必须有另外一个线程正在等待接收移交的任务。如果没有这样的线程，只要线程数不大于最大池数，就会创建一个新的线程，否则就会拒绝任务。只有池是无限的，或者接受的任务可以被拒绝。SynchronousQueue才是一个有价值的选择。</p>
+<h3 id="饱和策略"><a href="#饱和策略" class="headerlink" title="饱和策略"></a>饱和策略</h3><p>当一个有限队列充满后。饱和策略开始起作用。ThreadPoolExecutor的饱和策略可以通过调用setRejectedExecutionHandler去修改。JDK提供了几种不同的RejectedExecutionHandler：中止（默认，AbortPolicy），调用者有限（CallerRunsPolicy），遗弃（DiscardPolicy），遗弃最旧的（DiscardOldestPolicy）。</p>
+<h3 id="线程工厂"><a href="#线程工厂" class="headerlink" title="线程工厂"></a>线程工厂</h3><p>线程池是通过一个线程工程（ThreadFactory）去新建线程，在新建线程池时，可以指定自己的实现的线程工厂，对新建的线程进行个性化定制。比如线程名称，线程优先级等等。</p>
+<p>如果需要使用安全策略为某些特定代码授予权限，可以利用Executors中privilegedThreadFactory方法提供的线程工厂。</p>
+<h2 id="扩展ThreadPoolExecutor"><a href="#扩展ThreadPoolExecutor" class="headerlink" title="扩展ThreadPoolExecutor"></a>扩展ThreadPoolExecutor</h2><p>ThreadPoolExecutor的设计是可扩展的，其提供几个“钩子”函数让子类覆写：beforeExecute、afterExecute和terminate。可以利用beforeExecute和afterExecute去添加一些日志等操作。</p>
+<h2 id="并行递归算法"><a href="#并行递归算法" class="headerlink" title="并行递归算法"></a>并行递归算法</h2><p>如果一个循环的每次迭代都是相互独立的，我们不必等到迭代都完成后再一起处理，我们可以使用Executor将一个顺序执行转化为并行执行。比如网页图片的下载和加载。树的深度优先遍历等。</p>
+
+                
+<p class="pink-link-context">
+    <a href="/2019/07/05/concurrent-programme-13-lock/" rel="next" title="concurrent-programme-13-lock">
+    上一篇：concurrent-programme-13-lock
+  </a>
+</p>
+
+
+
+<p class="pink-link-context">
+    <a href="/2019/07/03/java-btrace-using/" rel="next" title="不重启JVM，替换已加载的类">
+    下一篇：不重启JVM，替换已加载的类
+  </a>
+</p>
+
+
+            </div>
+			
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+</div>
+
+        <div class="fixed-action-btn float-sitemap">
+    <a class="btn-floating btn-large pink">
+      <i class="fa fa-caret-square-o-up"></i>
+    </a>
+    <ul>
+      <li><a class="btn-return-top btn-floating waves-effect green" title="回到顶部"><i class="fa fa-arrow-circle-o-up"></i></a></li>
+      <li><a class="btn-floating waves-effect button-collapse yellow darken-1"  data-activates="main-menu" title="菜单"><i class="fa fa-navicon"></i></a></li>
+    </ul>
+  </div>
+
+    </main>
+    <footer class="page-footer indigo darken-1">
+    
+    <div class="footer-container container">
+        <div class="row">
+            
+            <div class="social-group col m4 s12">
+                <h5 class="white-text">社交</h5>
+                
+                    <a class="social-link" href="https://www.weibo.com/3854297228" target="_blank">
+                        <i class="fa fa-2x fa-weibo"></i>
+                    </a>
+                
+                    <a class="social-link" href="https://github.com/thinkerwolf" target="_blank">
+                        <i class="fa fa-2x fa-github"></i>
+                    </a>
+                
+                    <a class="social-link" href="/atom.xml" target="_blank">
+                        <i class="fa fa-2x fa-rss"></i>
+                    </a>
+                
+                
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+    </script>
+    <div class="site-visitors-container white-text">
+        <span>
+            <i class="fa fa-user"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+        </span>
+        <span>&nbsp;|&nbsp;</span>
+        <span>
+            <i class="fa fa-eye"></i>
+            <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+
+
+            </div>
+            
+
+            
+            <div class="col m8 s12">
+                <h5 class="white-text">友情链接</h5>
+                
+                    <a class="social-link" href="https://github.com/raytaylorlin" target="_blank">raytaylorism主题</a>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <div class="footer-copyright pink-link-context">
+        <div class="container">
+            © 2019 thinkerwolf.github.io, All rights reserved.
+            <p class="right" style="margin-top: 0;">本博客由 <a href="https://hexo.io">Hexo</a> 强力驱动 | 主题 <a href="https://github.com/raytaylorlin/hexo-theme-raytaylorism">raytaylorism</a></p>
+        </div>
+    </div>
+</footer>
+
+
+    <noscript>
+    <div class="noscript">
+        <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+    </div>
+</noscript>
+<div class="noscript">
+    <p class="center-align">当前网速较慢或者你使用的浏览器不支持博客特定功能，请尝试刷新或换用Chrome、Firefox等现代浏览器</p>
+</div>
+
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/materialize.min.js"></script>
+
+<script>
+    (function($) {
+        $(document).ready(function() {
+            // 隐藏禁用javascript（针对微信内置浏览器）的提示
+            $('.noscript').hide();
+
+            // 图片缩放效果
+            var $imgs = $('img').not('.slider-image').not('.avatar-image').not('.carousel-image').not('.card-cover-image').not('.qrcode');
+
+            // 给图片加上点击放大效果（materialbox插件）
+            $imgs.addClass('materialboxed').each(function(i, el) {
+                $(this).attr('data-caption', $(this).attr('alt') || ' ');
+            }).materialbox();
+
+            // 优化表格的显示
+            $('table').each(function() {
+                var $table = $(this);
+                // 除去多行代码的情况
+                if ($table.find('pre').length == 0) {
+                    $table.addClass('responsive-table striped bordered');
+                }
+            });
+
+            // 首页幻灯片
+            $('.slider').slider({indicators: true, full_width: true, interval: 8000});
+
+            $(".button-collapse").sideNav();
+            $(".category-menu").sideNav();
+
+            // 针对gallery post
+            $('.carousel').carousel({full_width: true});
+            $('.carousel-control.prev').click(function() {
+                $('.carousel').carousel('prev');
+            });
+            $('.carousel-control.next').click(function() {
+                $('.carousel').carousel('next');
+            });
+
+            // 文章目录
+            $('article').not('.simple-article').find('h1').add('h2').add('h3').add('h4').add('h5').add('h6').scrollSpy();
+
+            // 目录随屏幕滚动（防止目录过长越过footer）
+            var $toc = $('.toc');
+            var scrollTargetTop = 0;
+            $(window).scroll(function() {
+                var $activeLink = $toc.find('a.active.section');
+                if ($(window).scrollTop() < 100) {
+                    scrollTargetTop = 0;
+                } else {
+                    if ($activeLink[0]) {
+                        scrollTargetTop = $activeLink.offset().top - $toc.offset().top;
+                    }
+                }
+                $toc.css('top', '-' + scrollTargetTop + 'px');
+            });
+
+            // 修正文章目录的left-border颜色
+            var color = $('.table-of-contents-text').css('color');
+            $('.table-of-contents-link').css('border-left-color', color);
+
+            // 针对移动端做的优化：FAB按钮点击一下收回
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                $('.fixed-action-btn').addClass('click-to-toggle');
+            }
+            // 回到顶部
+            $('.btn-return-top').click(function() {
+                $('body, html').animate({
+                    scrollTop: 0
+                }, 500);
+            });
+
+            // 重置读书页面的Tab标签页的颜色
+            $('li.tab a').hover(function() {
+                $(this).toggleClass('text-lighten-4');
+            });
+            $('.indicator').addClass('pink lighten-2');
+
+            
+            // 添加new标签
+            $('.menu-reading, .menu-about').append('<span class="new badge pink"></span>');
+            
+
+            // 搜索功能
+            $('.modal-trigger').leanModal({
+                // 打开搜索框时自动聚焦
+                ready: function() {
+                    if ($('#search').is(":visible")) {
+                        $('#search-input').focus();
+                    }
+                }
+            });
+            var searchXml = "";
+            if (searchXml.length == 0) {
+             	searchXml = "search.xml";
+            }
+            var searchPath = "/" + searchXml;
+            initSearch(searchPath, 'search-input', 'search-result');
+        });
+
+        // 初始化搜索与匹配函数
+        var initSearch = function(path, search_id, content_id) {
+            'use strict';
+            $.ajax({
+                url: path,
+                dataType: "xml",
+                success: function(xmlResponse) {
+                    // get the contents from search data
+                    var datas = $("entry", xmlResponse).map(function() {
+                        return {
+                            title: $("title", this).text(),
+                            content: $("content", this).text(),
+                            url: $("url", this).text()
+                        };
+                    }).get();
+                    var $input = document.getElementById(search_id);
+                    var $resultContent = document.getElementById(content_id);
+                    $input.addEventListener('input', function() {
+                        var str = '<ul class=\"search-result-list\">';
+                        var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                        $resultContent.innerHTML = "";
+                        if (this.value.trim().length <= 0) {
+                            return;
+                        }
+                        // perform local searching
+                        datas.forEach(function(data) {
+                            var isMatch = true;
+                            var content_index = [];
+                            var data_title = data.title.trim().toLowerCase();
+                            var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                            var data_url = data.url;
+                            var index_title = -1;
+                            var index_content = -1;
+                            var first_occur = -1;
+                            // only match artiles with not empty titles and contents
+                            if (data_title != '' && data_content != '') {
+                                keywords.forEach(function(keyword, i) {
+                                    index_title = data_title.indexOf(keyword);
+                                    index_content = data_content.indexOf(keyword);
+                                    if (index_title < 0 && index_content < 0) {
+                                        isMatch = false;
+                                    } else {
+                                        if (index_content < 0) {
+                                            index_content = 0;
+                                        }
+                                        if (i == 0) {
+                                            first_occur = index_content;
+                                        }
+                                    }
+                                });
+                            }
+                            // show search results
+                            if (isMatch) {
+                                keywords.forEach(function(keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    data_title = data_title.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                });
+
+                                str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                                var content = data.content.trim().replace(/<[^>]+>/g, "");
+                                if (first_occur >= 0) {
+                                    // cut out 100 characters
+                                    var start = first_occur - 20;
+                                    var end = first_occur + 80;
+                                    if (start < 0) {
+                                        start = 0;
+                                    }
+                                    if (start == 0) {
+                                        end = 100;
+                                    }
+                                    if (end > content.length) {
+                                        end = content.length;
+                                    }
+                                    var match_content = content.substring(start, end);
+                                    // highlight all keywords
+                                    keywords.forEach(function(keyword) {
+                                        var regS = new RegExp(keyword, "gi");
+                                        match_content = match_content.replace(regS, "<span class=\"search-keyword pink lighten-2\">" + keyword + "</span>");
+                                    });
+
+                                    str += "<p class=\"search-result\">..." + match_content + "...</p>"
+                                }
+                                str += "</li>";
+                            }
+                        });
+                        str += "</ul>";
+                        $resultContent.innerHTML = str;
+                    });
+                }
+            });
+        }
+    })(jQuery);
+</script>
+
+
+<script src="/js/prettify.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("pre").addClass("prettyprint");
+        prettyPrint();
+    });
+</script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script type="text/javascript" async
+  src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+</body>
+</html>
